@@ -173,7 +173,7 @@
                         </div>
                         <p class="text-muted small mb-4">Buscamos un diseñador creativo con dominio de Figma para liderar el rediseño de plataformas corporativas...</p>
                         <div class="mt-auto">
-                            <button class="btn btn-registro text-white w-100 py-2">Ver Detalles y Postularse</button>
+                            <button class="btn btn-registro text-white w-100 py-2" data-bs-toggle="modal" data-bs-target="#detalleEmpleoModal">Ver Detalles y Postularse</button>
                         </div>
                     </div>
                 </div>
@@ -290,6 +290,55 @@
                             </form>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalle de Empleo y Aplicación -->
+    <div class="modal fade" id="detalleEmpleoModal" tabindex="-1" aria-labelledby="detalleEmpleoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold text-midnight" id="detalleEmpleoModalLabel">Detalle de la Oferta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Contenedor con IDs listos para que Nestor inyecte los datos del fetch -->
+                    <div id="jobDetailContent">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h4 class="fw-bold text-midnight mb-1" id="detailJobTitle">Desarrollador Full Stack Java/Angular</h4>
+                                <p class="text-muted mb-0 fs-5" id="detailJobCompany">TechSolutions El Salvador</p>
+                            </div>
+                            <span class="badge bg-lime text-midnight px-3 py-2 rounded-pill" id="detailJobLocation">Remoto</span>
+                        </div>
+                        
+                        <div class="d-flex gap-4 mb-4 pb-4 border-bottom text-muted fw-medium">
+                            <span>💰 <span id="detailJobSalary">$1,500 - $2,000</span></span>
+                            <span>⏱️ <span id="detailJobType">Tiempo Completo</span></span>
+                            <span>📅 Publicado: <span id="detailJobDate">13 Nov 2026</span></span>
+                        </div>
+
+                        <h6 class="fw-bold text-midnight mb-2">Descripción del puesto</h6>
+                        <p class="text-muted small mb-4" id="detailJobDescription">
+                            Buscamos un desarrollador con experiencia en Spring Boot y Angular para unirse a nuestro equipo de innovación. Serás responsable de diseñar y mantener APIs RESTful, integrar bases de datos PostgreSQL y desarrollar interfaces responsivas...
+                        </p>
+
+                        <h6 class="fw-bold text-midnight mb-2">Requisitos</h6>
+                        <ul class="text-muted small mb-4" id="detailJobRequirements">
+                            <li>3+ años de experiencia con Java y Spring Boot.</li>
+                            <li>Dominio de Angular y TypeScript.</li>
+                            <li>Experiencia con bases de datos relacionales (PostgreSQL).</li>
+                        </ul>
+                    </div>
+
+                    <!-- Formulario para Aplicar (POST request) -->
+                    <form id="formAplicarEmpleo" class="mt-4 pt-3 border-top text-end">
+                        <input type="hidden" id="applyJobId">
+                        <button type="button" class="btn btn-outline-secondary me-2 px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-registro text-white px-5 py-2">Aplicar a esta oferta</button>
+                    </form>
                 </div>
             </div>
         </div>

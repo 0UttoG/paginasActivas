@@ -1,0 +1,318 @@
+paths:
+  /api/admin/resumen:
+    get:
+      tags: [Administración]
+      summary: Obtener contadores generales del panel administrativo
+      description: Devuelve los indicadores globales de usuarios activos, empresas pendientes/aprobadas, vacantes pendientes/activas/reportadas, reportes abiertos, temas/respuestas publicados y total de postulaciones sin multiplicar conteos por joins.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Resumen administrativo obtenido correctamente
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+
+  /api/admin/usuarios:
+    get:
+      tags: [Administración]
+      summary: Listar usuarios del sistema con filtros por rol, estado y búsqueda
+      description: Devuelve el listado paginado de usuarios sin exponer contraseñas ni rutas de CV, filtrable por rol, estado y coincidencia en nombres, apellidos o correo.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: rol
+          required: false
+          schema:
+            type: string
+            enum: [candidato, empleador, administrador]
+          description: Filtrar por rol de usuario
+        - in: query
+          name: estado
+          required: false
+          schema:
+            type: string
+            enum: [activo, suspendido]
+          description: Filtrar por estado de cuenta
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+          description: Buscar por nombre, apellido o correo electrónico
+        - in: query
+          name: pagina
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Número de página
+        - in: query
+          name: limite
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Registros por página (máximo 100)
+      responses:
+        '200':
+          description: Listado paginado de usuarios obtenido correctamente
+        '400':
+          description: Parámetros de filtro inválidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+
+  /api/admin/usuarios/{id}/estado:
+    patch:
+      tags: [Administración]
+      summary: Activar o suspender un usuario del sistema
+      description: Cambia el estado de un usuario entre activo y suspendido dejando registro en bitácora. Exige motivo de al menos 5 caracteres al suspender, impide suspenderse a sí mismo y protege que no se suspenda al último administrador activo.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID del usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [activo, suspendido]
+                motivo:
+                  type: string
+                  description: Obligatorio con al menos 5 caracteres cuando estado es suspendido
+      responses:
+        '200':
+          description: Estado del usuario actualizado correctamente (o idempotente)
+        '400':
+          description: ID, estado o motivo inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+        '404':
+          description: Usuario no encontrado
+        '409':
+          description: No se permite suspenderse a sí mismo ni al último administrador activo
+  /api/admin/empresas:
+    get:
+      tags: [Administración]
+      summary: Listar empresas registradas para revisión administrativa
+      description: Devuelve el listado paginado de empresas con sus datos completos de verificación, NIT, documento legal y representante, permitiendo filtrar por estado de verificación o búsqueda por texto.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: estado_verificacion
+          schema:
+            type: string
+            enum: [pendiente, aprobada, rechazada, suspendida]
+          description: Filtrar por estado de verificación de la empresa
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Buscar por nombre legal, NIT, correo de contacto o datos del representante
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Número de página
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Cantidad de registros por página
+      responses:
+        '200':
+          description: Listado paginado de empresas obtenido correctamente
+        '400':
+          description: Parámetros de filtro o paginación inválidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+  /api/admin/empresas/{id}/documento:
+    get:
+      tags: [Administración]
+      summary: Descargar o visualizar el documento legal de una empresa
+      description: Entrega el archivo privado del documento legal de respaldo de la empresa solicitada tras validar el rol administrador y la existencia física del archivo.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la empresa
+      responses:
+        '200':
+          description: Archivo de documento legal entregado correctamente
+        '400':
+          description: ID de empresa inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+        '404':
+          description: Empresa no encontrada, sin documento registrado o archivo no disponible
+  /api/admin/empresas/{id}/estado:
+    patch:
+      tags: [Administración]
+      summary: Cambiar el estado de verificación de una empresa
+      description: Permite aprobar, rechazar, suspender o devolver a pendiente una empresa. Exige motivo de al menos 5 caracteres al rechazar o suspender y exige NIT y documento legal disponible en disco para aprobar. Registra notificación al propietario y bitácora.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la empresa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado_verificacion:
+                  type: string
+                  enum: [pendiente, aprobada, rechazada, suspendida]
+                estado:
+                  type: string
+                  enum: [pendiente, aprobada, rechazada, suspendida]
+                motivo:
+                  type: string
+                  description: Obligatorio con al menos 5 caracteres al rechazar o suspender
+      responses:
+        '200':
+          description: Estado de verificación actualizado correctamente (o idempotente)
+        '400':
+          description: ID, estado o motivo inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+        '404':
+          description: Empresa no encontrada
+        '409':
+          description: Transición de estado de verificación no permitida
+        '422':
+          description: Faltan requisitos obligatorios (NIT o documento legal disponible) para aprobar
+  /api/admin/vacantes:
+    get:
+      tags: [Administración]
+      summary: Listar vacantes para moderación administrativa
+      description: Devuelve el listado paginado de vacantes en todos los estados junto a los datos de su empresa y la cantidad de reportes abiertos por usuarios distintos.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: estado
+          schema:
+            type: string
+            enum: [borrador, pendiente, publicada, oculta, rechazada, cerrada]
+          description: Filtrar por estado de la vacante
+        - in: query
+          name: empresa_id
+          schema:
+            type: integer
+          description: Filtrar por ID de empresa
+        - in: query
+          name: reportada
+          schema:
+            type: boolean
+          description: Filtrar vacantes con reportes abiertos (true) o sin reportes abiertos (false)
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Buscar por título, ubicación, descripción o empresa
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Listado paginado de vacantes obtenido correctamente
+        '400':
+          description: Parámetros de filtro inválidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+  /api/admin/vacantes/{id}/estado:
+    patch:
+      tags: [Administración]
+      summary: Cambiar el estado administrativo de una vacante
+      description: Permite publicar, ocultar, rechazar, cerrar o devolver a revisión una vacante. Publicar exige empresa aprobada, campos válidos y fecha de cierre vigente; fija fecha_publicacion si faltaba. Exige motivo de al menos 5 caracteres al rechazar u ocultar, notifica al empleador y audita en bitácora.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la vacante
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [borrador, pendiente, publicada, oculta, rechazada, cerrada]
+                motivo:
+                  type: string
+                  description: Obligatorio con al menos 5 caracteres al rechazar u ocultar
+      responses:
+        '200':
+          description: Estado de la vacante actualizado correctamente (o idempotente)
+        '400':
+          description: ID, estado o motivo inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+        '404':
+          description: Vacante no encontrada
+        '409':
+          description: Transición de estado de vacante no permitida
+        '422':
+          description: Empresa no aprobada, campos incompletos o fecha de cierre vencida al intentar publicar

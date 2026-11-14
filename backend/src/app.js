@@ -13,6 +13,7 @@ import usuarioRoutes from './routes/usuario.routes.js';
 import publicoRoutes from './routes/publico.routes.js';
 import perfilRoutes from './routes/perfil.routes.js';
 import empleadorRoutes from './routes/empleador.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
@@ -52,6 +53,9 @@ app.use('/api/perfil', perfilRoutes);
 
 //rutas privadas del empleador
 app.use('/api/empleador', empleadorRoutes);
+
+//rutas privadas de administración
+app.use('/api/admin', adminRoutes);
 
 //rutas de notificaciones de sesión activa
 app.get('/api/notificaciones', authHeader, listarNotificacionesUsuarioController);

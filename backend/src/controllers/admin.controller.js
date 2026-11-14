@@ -9,7 +9,10 @@ import {
     actualizarEstadoVacanteAdmin,
     listarCategoriasEmpleoAdmin,
     crearCategoriaEmpleoAdmin,
-    actualizarCategoriaEmpleoAdmin
+    actualizarCategoriaEmpleoAdmin,
+    eliminarCategoriaEmpleoAdmin,
+    obtenerEstadisticasAdmin,
+    listarBitacoraAdmin
 } from '../services/adminServices.js';
 
 //controlador para obtener el resumen de contadores del panel administrativo
@@ -174,6 +177,47 @@ export const actualizarCategoriaEmpleoAdminController = async (req, res) => {
         const status = error.statusCode || 500;
         return res.status(status).json({
             mensaje: error.message || 'error al actualizar la categoría de empleo'
+        });
+    }
+};
+
+//controlador para eliminar una categoría de empleo sin referencias asociadas
+export const eliminarCategoriaEmpleoAdminController = async (req, res) => {
+    try {
+        await eliminarCategoriaEmpleoAdmin(req.user.id, req.params.id);
+        return res.status(204).send();
+    } catch (error) {
+        const status = error.statusCode || 500;
+        return res.status(status).json({
+            mensaje: error.message || 'error al eliminar la categoría de empleo'
+        });
+    }
+};
+
+//controlador para obtener estadísticas administrativas de vacantes, postulaciones y categorías
+export const obtenerEstadisticasAdminController = async (req, res) => {
+    try {
+        const estadisticas = await obtenerEstadisticasAdmin(req.query);
+        return res.status(200).json({
+            data: estadisticas
+        });
+    } catch (error) {
+        const status = error.statusCode || 500;
+        return res.status(status).json({
+            mensaje: error.message || 'error al obtener las estadísticas administrativas'
+        });
+    }
+};
+
+//controlador para consultar el historial de bitácora administrativa con filtros y paginación
+export const listarBitacoraAdminController = async (req, res) => {
+    try {
+        const resultado = await listarBitacoraAdmin(req.query);
+        return res.status(200).json(resultado);
+    } catch (error) {
+        const status = error.statusCode || 500;
+        return res.status(status).json({
+            mensaje: error.message || 'error al consultar la bitácora'
         });
     }
 };

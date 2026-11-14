@@ -963,3 +963,292 @@ export const actualizarCategoriaEmpleoAdmin = async (adminId, categoriaIdParam, 
         client.release();
     }
 };
+
+//validar y normalizar rango opcional de fechas ISO (YYYY-MM-DD incluye el día completo en hasta)
+const parsearRangoFechasIso = (query = {}, aplicarDefectoMesActual = false) => {
+    let desdeIso = null;
+    let desdeComparacionMs = null;
+
+    if (query.desde !== undefined && query.desde !== null && String(query.desde).trim() !== '') {
+        const rawDesde = String(query.desde).trim();
+        const esSoloFecha = /^\d{4}-\d{2}-\d{2}$/.test(rawDesde);
+        const fecha = new Date(esSoloFecha ? `${rawDesde}T00:00:00.000Z` : rawDesde);
+        if (Number.isNaN(fecha.getTime()) || (esSoloFecha && fecha.toISOString().slice(0, 10) !== rawDesde)) {
+            throw crearError('parámetro desde inválido; use formato ISO', 400);
+        }
+        desdeIso = fecha.toISOString();
+        desdeComparacionMs = fecha.getTime();
+    }
+
+    let hastaExclusivaIso = null;
+    let hastaComparacionMs = null;
+
+    if (query.hasta !== undefined && query.hasta !== null && String(query.hasta).trim() !== '') {
+        const rawHasta = String(query.hasta).trim();
+        const esSoloFecha = /^\d{4}-\d{2}-\d{2}$/.test(rawHasta);
+        const fecha = new Date(esSoloFecha ? `${rawHasta}T00:00:00.000Z` : rawHasta);
+        if (Number.isNaN(fecha.getTime()) || (esSoloFecha && fecha.toISOString().slice(0, 10) !== rawHasta)) {
+            throw crearError('parámetro hasta inválido; use formato ISO', 400);
+        }
+        hastaComparacionMs = fecha.getTime();
+        hastaExclusivaIso = esSoloFecha
+            ? new Date(hastaComparacionMs + 86400000).toISOString()
+            : fecha.toISOString();
+    }
+
+    if (desdeComparacionMs !== null && hastaComparacionMs !== null && desdeComparacionMs > hastaComparacionMs) {
+        throw crearError('rango de fechas inválido: desde no puede ser mayor que hasta', 400);
+    }
+
+    if (aplicarDefectoMesActual) {
+        const ahora = new Date();
+        if (desdeIso === null) {
+            const inicioMes = new Date(Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), 1));
+            desdeIso = inicioMes.toISOString();
+        }
+        if (hastaExclusivaIso === null) {
+            hastaExclusivaIso = new Date(ahora.getTime() + 1000).toISOString();
+        }
+        if (new Date(desdeIso).getTime() > new Date(hastaExclusivaIso).getTime()) {
+            throw crearError('rango de fechas inválido: desde no puede ser mayor que hasta', 400);
+        }
+    }
+
+    return {
+        desdeIso,
+        hastaExclusivaIso
+    };
+};
+
+//eliminar una categoría de empleo evitando borrar si tiene referencias en vacantes o alertas (Q15, D12, T16)
+export const eliminarCategoriaEmpleoAdmin = async (adminId, categoriaIdParam) => {
+    const categoriaId = validarIdPositivo(categoriaIdParam, 'categoría');
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const { rows: actuales } = await client.query(
+            'SELECT id, nombre FROM categorias_empleo WHERE id = $1 FOR UPDATE',
+            [categoriaId]
+        );
+        if (actuales.length === 0) {
+            throw crearError('categoría de empleo no encontrada', 404);
+        }
+        const categoriaActual = actuales[0];
+
+        const { rows: usoRows } = await client.query(
+            `SELECT
+                EXISTS (SELECT 1 FROM vacantes WHERE categoria_id = $1)
+                OR EXISTS (SELECT 1 FROM alertas_empleo WHERE categoria_id = $1) AS en_uso`,
+            [categoriaId]
+        );
+        if (usoRows[0]?.en_uso) {
+            throw crearError('no se puede eliminar la categoría porque tiene registros asociados', 409);
+        }
+
+        await client.query('DELETE FROM categorias_empleo WHERE id = $1', [categoriaId]);
+
+        await client.query(
+            `INSERT INTO bitacora (usuario_id, accion, entidad, entidad_id, detalle)
+            VALUES ($1, $2, $3, $4, $5)`,
+            [adminId, 'eliminar_categoria_empleo', 'categoria_empleo', categoriaActual.id, `Categoría de empleo eliminada: ${categoriaActual.nombre}`]
+        );
+
+        await client.query('COMMIT');
+    } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        if (error.code === '23503') {
+            throw crearError('no se puede eliminar la categoría porque tiene registros asociados', 409);
+        }
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+//obtener estadísticas de negocio por vacantes, postulaciones y categorías aplicando rango de fechas (Q16, D12, T22)
+export const obtenerEstadisticasAdmin = async (query = {}) => {
+    const { desdeIso, hastaExclusivaIso } = parsearRangoFechasIso(query, true);
+
+    const [vacEstadoRes, postMesRes, postEstadoRes, postCategoriaRes] = await Promise.all([
+        pool.query(
+            `SELECT estado, COUNT(*)::int AS total
+            FROM vacantes
+            GROUP BY estado
+            ORDER BY estado`
+        ),
+        pool.query(
+            `SELECT
+                to_char(date_trunc('month', fecha_postulacion), 'YYYY-MM-DD') AS mes,
+                COUNT(*)::int AS total
+            FROM postulaciones
+            WHERE fecha_postulacion >= $1::timestamp
+                AND fecha_postulacion < $2::timestamp
+            GROUP BY date_trunc('month', fecha_postulacion)
+            ORDER BY date_trunc('month', fecha_postulacion)`,
+            [desdeIso, hastaExclusivaIso]
+        ),
+        pool.query(
+            `SELECT estado, COUNT(*)::int AS total
+            FROM postulaciones
+            WHERE fecha_postulacion >= $1::timestamp
+                AND fecha_postulacion < $2::timestamp
+            GROUP BY estado
+            ORDER BY estado`,
+            [desdeIso, hastaExclusivaIso]
+        ),
+        pool.query(
+            `SELECT
+                c.id,
+                COALESCE(c.nombre, 'Sin categoría') AS nombre,
+                COUNT(p.id)::int AS total
+            FROM postulaciones p
+            JOIN vacantes v ON v.id = p.vacante_id
+            LEFT JOIN categorias_empleo c ON c.id = v.categoria_id
+            WHERE p.fecha_postulacion >= $1::timestamp
+                AND p.fecha_postulacion < $2::timestamp
+            GROUP BY c.id, c.nombre
+            ORDER BY total DESC, nombre ASC`,
+            [desdeIso, hastaExclusivaIso]
+        )
+    ]);
+
+    const vacantesPorEstado = vacEstadoRes.rows.map((r) => ({
+        estado: r.estado,
+        total: Number(r.total ?? 0)
+    }));
+
+    const resumenVacantes = {
+        total: 0,
+        borrador: 0,
+        pendiente: 0,
+        publicada: 0,
+        oculta: 0,
+        rechazada: 0,
+        cerrada: 0
+    };
+    for (const fila of vacantesPorEstado) {
+        if (Object.hasOwn(resumenVacantes, fila.estado)) {
+            resumenVacantes[fila.estado] = fila.total;
+        }
+        resumenVacantes.total += fila.total;
+    }
+
+    const postulacionesPorEstado = postEstadoRes.rows.map((r) => ({
+        estado: r.estado,
+        total: Number(r.total ?? 0)
+    }));
+
+    const resumenPostulaciones = {
+        total: 0,
+        nueva: 0,
+        en_proceso: 0,
+        contratado: 0,
+        rechazado: 0
+    };
+    for (const fila of postulacionesPorEstado) {
+        if (Object.hasOwn(resumenPostulaciones, fila.estado)) {
+            resumenPostulaciones[fila.estado] = fila.total;
+        }
+        resumenPostulaciones.total += fila.total;
+    }
+
+    const postulacionesPorMes = postMesRes.rows.map((r) => ({
+        mes: r.mes,
+        total: Number(r.total ?? 0)
+    }));
+
+    const postulacionesPorCategoria = postCategoriaRes.rows.map((r) => ({
+        id: r.id === null || r.id === undefined ? null : Number(r.id),
+        nombre: r.nombre,
+        total: Number(r.total ?? 0)
+    }));
+
+    return {
+        rango: {
+            desde: desdeIso,
+            hasta: hastaExclusivaIso
+        },
+        vacantes_por_estado: vacantesPorEstado,
+        resumen_vacantes: resumenVacantes,
+        postulaciones_por_mes: postulacionesPorMes,
+        postulaciones_por_estado: postulacionesPorEstado,
+        resumen_postulaciones: resumenPostulaciones,
+        postulaciones_por_categoria: postulacionesPorCategoria
+    };
+};
+
+//listar eventos de bitácora ordenados cronológicamente con filtros y paginación (Q16, D12, T04/T20)
+export const listarBitacoraAdmin = async (query = {}) => {
+    const { pagina, limite, offset } = normalizarPaginacion(query);
+    const condiciones = [];
+    const valores = [];
+
+    if (query.usuario_id !== undefined && query.usuario_id !== null && String(query.usuario_id).trim() !== '') {
+        const usuarioId = validarIdPositivo(query.usuario_id, 'usuario');
+        valores.push(usuarioId);
+        condiciones.push(`b.usuario_id = $${valores.length}`);
+    }
+
+    if (query.entidad !== undefined && query.entidad !== null && String(query.entidad).trim() !== '') {
+        const entidad = String(query.entidad).trim();
+        valores.push(entidad);
+        condiciones.push(`b.entidad = $${valores.length}`);
+    }
+
+    const { desdeIso, hastaExclusivaIso } = parsearRangoFechasIso(query, false);
+    if (desdeIso !== null) {
+        valores.push(desdeIso);
+        condiciones.push(`b.fecha >= $${valores.length}::timestamp`);
+    }
+    if (hastaExclusivaIso !== null) {
+        valores.push(hastaExclusivaIso);
+        condiciones.push(`b.fecha < $${valores.length}::timestamp`);
+    }
+
+    const whereSql = condiciones.length > 0 ? `WHERE ${condiciones.join(' AND ')}` : '';
+    const paramsPaginacion = [...valores, limite, offset];
+    const idxLimite = valores.length + 1;
+    const idxOffset = valores.length + 2;
+
+    const [bitacoraRes, totalRes] = await Promise.all([
+        pool.query(
+            `SELECT
+                b.id,
+                b.usuario_id,
+                u.nombres AS usuario_nombres,
+                u.apellidos AS usuario_apellidos,
+                u.correo AS usuario_correo,
+                b.accion,
+                b.entidad,
+                b.entidad_id,
+                b.detalle,
+                b.fecha
+            FROM bitacora b
+            LEFT JOIN usuarios u ON u.id = b.usuario_id
+            ${whereSql}
+            ORDER BY b.fecha DESC, b.id DESC
+            LIMIT $${idxLimite} OFFSET $${idxOffset}`,
+            paramsPaginacion
+        ),
+        pool.query(
+            `SELECT COUNT(*)::int AS total
+            FROM bitacora b
+            ${whereSql}`,
+            valores
+        )
+    ]);
+
+    const total = Number(totalRes.rows[0]?.total ?? 0);
+
+    return {
+        data: bitacoraRes.rows,
+        meta: {
+            pagina,
+            limite,
+            total,
+            paginas: total === 0 ? 0 : Math.ceil(total / limite)
+        }
+    };
+};

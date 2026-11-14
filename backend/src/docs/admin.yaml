@@ -398,3 +398,110 @@ paths:
           description: Categoría de empleo no encontrada
         '409':
           description: Ya existe una categoría de empleo con ese nombre
+    delete:
+      tags: [Administración]
+      summary: Eliminar una categoría de empleo
+      description: Elimina una categoría de empleo únicamente si no está referenciada por vacantes o alertas de empleo, registrando auditoría en bitácora.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la categoría de empleo
+      responses:
+        '204':
+          description: Categoría de empleo eliminada correctamente
+        '400':
+          description: ID de categoría inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+        '404':
+          description: Categoría de empleo no encontrada
+        '409':
+          description: La categoría tiene registros asociados y no puede eliminarse
+  /api/admin/estadisticas:
+    get:
+      tags: [Administración]
+      summary: Obtener estadísticas de negocio del panel administrativo
+      description: Devuelve conteos reales de vacantes por estado y postulaciones agrupadas por mes, estado y categoría dentro del rango ISO solicitado (por defecto desde el inicio del mes UTC actual).
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: desde
+          schema:
+            type: string
+            format: date-time
+          description: Fecha o fecha-hora ISO de inicio
+        - in: query
+          name: hasta
+          schema:
+            type: string
+            format: date-time
+          description: Fecha o fecha-hora ISO de fin (si es YYYY-MM-DD incluye todo ese día)
+      responses:
+        '200':
+          description: Estadísticas administrativas obtenidas correctamente
+        '400':
+          description: Rango de fechas inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+  /api/admin/bitacora:
+    get:
+      tags: [Administración]
+      summary: Consultar bitácora de auditoría administrativa
+      description: Devuelve el listado paginado de acciones registradas en bitácora ordenadas cronológicamente (fecha DESC, id DESC), filtrable por usuario, entidad y rango de fechas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: usuario_id
+          schema:
+            type: integer
+          description: Filtrar por ID de usuario actor
+        - in: query
+          name: entidad
+          schema:
+            type: string
+          description: Filtrar por tipo de entidad auditada
+        - in: query
+          name: desde
+          schema:
+            type: string
+            format: date-time
+          description: Fecha o fecha-hora ISO inicial
+        - in: query
+          name: hasta
+          schema:
+            type: string
+            format: date-time
+          description: Fecha o fecha-hora ISO final
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Registros de bitácora obtenidos correctamente
+        '400':
+          description: Parámetros de filtro o fechas inválidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida

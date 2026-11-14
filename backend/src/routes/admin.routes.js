@@ -10,7 +10,10 @@ import {
     actualizarEstadoVacanteAdminController,
     listarCategoriasEmpleoAdminController,
     crearCategoriaEmpleoAdminController,
-    actualizarCategoriaEmpleoAdminController
+    actualizarCategoriaEmpleoAdminController,
+    eliminarCategoriaEmpleoAdminController,
+    obtenerEstadisticasAdminController,
+    listarBitacoraAdminController
 } from '../controllers/admin.controller.js';
 import { authHeader, permitirRoles } from '../middlewares/authHandler.js';
 
@@ -28,5 +31,8 @@ router.patch('/vacantes/:id/estado', authHeader, permitirRoles('administrador'),
 router.get('/categorias-empleo', authHeader, permitirRoles('administrador'), listarCategoriasEmpleoAdminController);
 router.post('/categorias-empleo', authHeader, permitirRoles('administrador'), crearCategoriaEmpleoAdminController);
 router.patch('/categorias-empleo/:id', authHeader, permitirRoles('administrador'), actualizarCategoriaEmpleoAdminController);
+router.delete('/categorias-empleo/:id', authHeader, permitirRoles('administrador'), eliminarCategoriaEmpleoAdminController);
+router.get('/estadisticas', authHeader, permitirRoles('administrador'), obtenerEstadisticasAdminController);
+router.get('/bitacora', authHeader, permitirRoles('administrador'), listarBitacoraAdminController);
 
 export default router;

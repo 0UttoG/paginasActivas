@@ -60,3 +60,170 @@ paths:
           description: Acceso restringido al rol empleador o cuenta suspendida
         '409':
           description: El empleador ya tiene una empresa registrada
+    patch:
+      summary: Actualiza parcialmente los datos de la empresa del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre_legal:
+                  type: string
+                  example: TechBridge El Salvador S.A.
+                nit:
+                  type: string
+                  nullable: true
+                  example: 0614-123456-101-2
+                descripcion:
+                  type: string
+                  nullable: true
+                  example: Empresa dedicada al desarrollo de soluciones digitales
+                sitio_web:
+                  type: string
+                  nullable: true
+                  example: https://techbridge.com
+                correo_contacto:
+                  type: string
+                  example: talento@techbridge.com
+                telefono_contacto:
+                  type: string
+                  nullable: true
+                  example: 2222-4444
+      responses:
+        '200':
+          description: Empresa actualizada correctamente
+        '400':
+          description: Datos de entrada inválidos o sin campos permitidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: El empleador aún no tiene una empresa registrada
+  /api/empleador/empresa/logo:
+    post:
+      summary: Sube o actualiza el logo de la empresa del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - archivo
+              properties:
+                archivo:
+                  type: string
+                  format: binary
+                  description: Logo en formato PNG, JPG o SVG (máximo 2 MB)
+      responses:
+        '201':
+          description: Logo actualizado correctamente
+        '400':
+          description: Archivo no enviado o cabecera multipart inválida
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: El empleador aún no tiene una empresa registrada
+        '413':
+          description: El archivo supera el tamaño máximo de 2 MB
+        '415':
+          description: Formato no permitido, solo se aceptan archivos PNG, JPG o SVG
+  /api/empleador/empresa/documento:
+    get:
+      summary: Descarga o consulta el documento legal de la empresa del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Archivo de documento legal enviado correctamente
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: Empresa no encontrada o documento legal no disponible
+    post:
+      summary: Sube o actualiza el documento legal de la empresa del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - archivo
+              properties:
+                archivo:
+                  type: string
+                  format: binary
+                  description: Documento legal en formato PDF, PNG o JPG (máximo 5 MB)
+      responses:
+        '201':
+          description: Documento legal actualizado correctamente
+        '400':
+          description: Archivo no enviado o cabecera multipart inválida
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: El empleador aún no tiene una empresa registrada
+        '413':
+          description: El archivo supera el tamaño máximo de 5 MB
+        '415':
+          description: Formato no permitido, solo se aceptan archivos PDF, PNG o JPG
+  /api/empleador/vacantes:
+    get:
+      summary: Lista las vacantes propias del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: estado
+          schema:
+            type: string
+            enum: [borrador, pendiente, publicada, oculta, rechazada, cerrada]
+          description: Filtrar por estado de la vacante
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+          description: Número de página
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+          description: Registros por página
+      responses:
+        '200':
+          description: Listado paginado de vacantes del empleador
+        '400':
+          description: Parámetro estado inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida

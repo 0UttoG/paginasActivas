@@ -6,12 +6,30 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_BACKEND = path.resolve(__dirname, '..', '..');
 const LIMITE_CV_BYTES = 5 * 1024 * 1024;
+const LIMITE_LOGO_BYTES = 2 * 1024 * 1024;
+const LIMITE_DOCUMENTO_BYTES = 5 * 1024 * 1024;
 const HOLGURA_MULTIPART = 64 * 1024;
 const CAMPOS_CV = ['archivo', 'cv', 'file'];
+const CAMPOS_LOGO = ['archivo', 'logo', 'file'];
+const CAMPOS_DOCUMENTO = ['archivo', 'documento', 'file'];
 
 const TIPOS_CV_PERMITIDOS = {
     '.pdf': ['application/pdf'],
     '.docx': ['application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+};
+
+const TIPOS_LOGO_PERMITIDOS = {
+    '.png': ['image/png'],
+    '.jpg': ['image/jpeg', 'image/jpg'],
+    '.jpeg': ['image/jpeg', 'image/jpg'],
+    '.svg': ['image/svg+xml']
+};
+
+const TIPOS_DOCUMENTO_PERMITIDOS = {
+    '.pdf': ['application/pdf'],
+    '.png': ['image/png'],
+    '.jpg': ['image/jpeg', 'image/jpg'],
+    '.jpeg': ['image/jpeg', 'image/jpg']
 };
 
 //extraer partes de un cuerpo multipart/form-data sin perder datos binarios
@@ -67,8 +85,16 @@ const extraerPartesMultipart = (buffer, boundary) => {
     return partes;
 };
 
-//middleware para recibir y validar el archivo de cv del candidato
-export const subirCvCandidato = (req, res, next) => {
+//construir middleware para recibir y validar un archivo multipart
+const crearMiddlewareSubida = ({
+    limiteBytes,
+    campos,
+    tiposPermitidos,
+    subcarpeta,
+    mensajeFaltante,
+    mensajeTamano,
+    mensajeTipo
+}) => (req, res, next) => {
     const contentType = req.headers['content-type'] || '';
     if (!contentType.toLowerCase().includes('multipart/form-data')) {
         return res.status(400).json({ mensaje: 'se requiere formato multipart/form-data' });
@@ -87,11 +113,11 @@ export const subirCvCandidato = (req, res, next) => {
 
     req.on('data', (chunk) => {
         totalBytes += chunk.length;
-        if (totalBytes > LIMITE_CV_BYTES + HOLGURA_MULTIPART) {
+        if (totalBytes > limiteBytes + HOLGURA_MULTIPART) {
             excedido = true;
-            if (totalBytes > LIMITE_CV_BYTES + 1024 * 1024 && !respondido) {
+            if (totalBytes > limiteBytes + 1024 * 1024 && !respondido) {
                 respondido = true;
-                res.status(413).json({ mensaje: 'el archivo supera el tamaño máximo de 5 MB' });
+                res.status(413).json({ mensaje: mensajeTamano });
                 req.destroy();
             }
             return;
@@ -114,37 +140,35 @@ export const subirCvCandidato = (req, res, next) => {
         }
 
         if (excedido) {
-            return res.status(413).json({ mensaje: 'el archivo supera el tamaño máximo de 5 MB' });
+            return res.status(413).json({ mensaje: mensajeTamano });
         }
 
         try {
             const cuerpo = Buffer.concat(fragmentos);
             const partes = extraerPartesMultipart(cuerpo, boundary);
-            const archivo = partes.find((p) => CAMPOS_CV.includes(p.campo)) || partes[0];
+            const archivo = partes.find((p) => campos.includes(p.campo)) || partes[0];
 
             if (!archivo || !archivo.nombreOriginal || archivo.datos.length === 0) {
-                return res.status(400).json({ mensaje: 'debe adjuntar un archivo de cv' });
+                return res.status(400).json({ mensaje: mensajeFaltante });
             }
 
-            if (archivo.datos.length > LIMITE_CV_BYTES) {
-                return res.status(413).json({ mensaje: 'el archivo supera el tamaño máximo de 5 MB' });
+            if (archivo.datos.length > limiteBytes) {
+                return res.status(413).json({ mensaje: mensajeTamano });
             }
 
             const extension = path.extname(archivo.nombreOriginal).toLowerCase();
-            const mimesPermitidos = TIPOS_CV_PERMITIDOS[extension];
+            const mimesPermitidos = tiposPermitidos[extension];
             if (!mimesPermitidos || !mimesPermitidos.includes(archivo.mimeType)) {
-                return res.status(415).json({
-                    mensaje: 'formato no permitido, solo se aceptan archivos PDF o DOCX'
-                });
+                return res.status(415).json({ mensaje: mensajeTipo });
             }
 
             const dirBase = process.env.UPLOAD_DIR || 'uploads';
-            const carpetaCv = path.resolve(ROOT_BACKEND, dirBase, 'cv');
-            await fs.mkdir(carpetaCv, { recursive: true });
+            const carpetaDestino = path.resolve(ROOT_BACKEND, dirBase, subcarpeta);
+            await fs.mkdir(carpetaDestino, { recursive: true });
 
             const nombreGuardado = `${crypto.randomUUID()}${extension}`;
-            const rutaAbsoluta = path.join(carpetaCv, nombreGuardado);
-            const rutaRelativa = path.posix.join(dirBase.replace(/\\/g, '/'), 'cv', nombreGuardado);
+            const rutaAbsoluta = path.join(carpetaDestino, nombreGuardado);
+            const rutaRelativa = path.posix.join(dirBase.replace(/\\/g, '/'), subcarpeta, nombreGuardado);
 
             await fs.writeFile(rutaAbsoluta, archivo.datos);
 
@@ -162,3 +186,36 @@ export const subirCvCandidato = (req, res, next) => {
         }
     });
 };
+
+//middleware para recibir y validar el archivo de cv del candidato
+export const subirCvCandidato = crearMiddlewareSubida({
+    limiteBytes: LIMITE_CV_BYTES,
+    campos: CAMPOS_CV,
+    tiposPermitidos: TIPOS_CV_PERMITIDOS,
+    subcarpeta: 'cv',
+    mensajeFaltante: 'debe adjuntar un archivo de cv',
+    mensajeTamano: 'el archivo supera el tamaño máximo de 5 MB',
+    mensajeTipo: 'formato no permitido, solo se aceptan archivos PDF o DOCX'
+});
+
+//middleware para recibir y validar el logo de la empresa
+export const subirLogoEmpresa = crearMiddlewareSubida({
+    limiteBytes: LIMITE_LOGO_BYTES,
+    campos: CAMPOS_LOGO,
+    tiposPermitidos: TIPOS_LOGO_PERMITIDOS,
+    subcarpeta: 'logos',
+    mensajeFaltante: 'debe adjuntar un archivo de logo',
+    mensajeTamano: 'el archivo supera el tamaño máximo de 2 MB',
+    mensajeTipo: 'formato no permitido, solo se aceptan archivos PNG, JPG o SVG'
+});
+
+//middleware para recibir y validar el documento legal de la empresa
+export const subirDocumentoEmpresa = crearMiddlewareSubida({
+    limiteBytes: LIMITE_DOCUMENTO_BYTES,
+    campos: CAMPOS_DOCUMENTO,
+    tiposPermitidos: TIPOS_DOCUMENTO_PERMITIDOS,
+    subcarpeta: 'documentos',
+    mensajeFaltante: 'debe adjuntar un archivo de documento legal',
+    mensajeTamano: 'el archivo supera el tamaño máximo de 5 MB',
+    mensajeTipo: 'formato no permitido, solo se aceptan archivos PDF, PNG o JPG'
+});

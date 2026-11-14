@@ -4,9 +4,15 @@ import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
 import { pool } from './db.js';
 import { errorHandler } from './middlewares/errorHandler.js';
+import { authHeader } from './middlewares/authHandler.js';
+import {
+    listarNotificacionesUsuarioController,
+    marcarNotificacionLeidaController
+} from './controllers/perfil.controller.js';
 import usuarioRoutes from './routes/usuario.routes.js';
 import publicoRoutes from './routes/publico.routes.js';
 import perfilRoutes from './routes/perfil.routes.js';
+import empleadorRoutes from './routes/empleador.routes.js';
 
 const app = express();
 app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
@@ -43,6 +49,13 @@ app.use('/api', publicoRoutes);
 
 //rutas privadas del candidato
 app.use('/api/perfil', perfilRoutes);
+
+//rutas privadas del empleador
+app.use('/api/empleador', empleadorRoutes);
+
+//rutas de notificaciones de sesión activa
+app.get('/api/notificaciones', authHeader, listarNotificacionesUsuarioController);
+app.patch('/api/notificaciones/:id/leida', authHeader, marcarNotificacionLeidaController);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //capturar rutas inexistentes

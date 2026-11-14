@@ -108,6 +108,39 @@ paths:
           description: Tipo de archivo no permitido (solo PDF o DOCX)
 
   /api/perfil/postulaciones:
+    get:
+      summary: Lista las postulaciones propias del candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: estado
+          schema:
+            type: string
+            enum: [nueva, en_proceso, contratado, rechazado]
+          description: Filtrar por estado de postulación
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Listado paginado de postulaciones del candidato
+        '400':
+          description: Parámetro de estado inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+
     post:
       summary: Registra una postulación del candidato autenticado a una vacante
       tags:
@@ -145,3 +178,162 @@ paths:
           description: Ya existe una postulación para esta vacante
         '422':
           description: El candidato debe cargar un CV antes de postular
+
+  /api/perfil/guardados:
+    get:
+      summary: Lista las vacantes guardadas por el candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Listado paginado de vacantes guardadas
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+
+    post:
+      summary: Guarda una vacante en favoritos del candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vacante_id:
+                  type: integer
+                  example: 1
+              required:
+                - vacante_id
+      responses:
+        '201':
+          description: Vacante guardada correctamente
+        '400':
+          description: vacante_id inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+        '404':
+          description: Vacante no encontrada o no disponible
+        '409':
+          description: La vacante ya estaba guardada
+
+  /api/perfil/guardados/{vacanteId}:
+    delete:
+      summary: Elimina una vacante de los favoritos del candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: vacanteId
+          required: true
+          schema:
+            type: integer
+          description: ID de la vacante guardada
+      responses:
+        '204':
+          description: Vacante eliminada de guardados
+        '400':
+          description: vacanteId inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+        '404':
+          description: La vacante no se encuentra en los guardados del candidato
+
+  /api/notificaciones:
+    get:
+      summary: Lista las notificaciones del usuario autenticado
+      tags:
+        - Notificaciones
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: leida
+          schema:
+            type: boolean
+          description: Filtrar por notificaciones leídas (true) o no leídas (false)
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Listado paginado de notificaciones
+        '400':
+          description: Parámetro leida inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Cuenta suspendida
+
+  /api/notificaciones/{id}/leida:
+    patch:
+      summary: Marca una notificación propia como leída
+      tags:
+        - Notificaciones
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la notificación
+      responses:
+        '200':
+          description: Notificación marcada como leída
+        '400':
+          description: ID de notificación inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Cuenta suspendida
+        '404':
+          description: Notificación no encontrada
+  /api/perfil/dashboard:
+    get:
+      summary: Obtiene el dashboard resumen del candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Resumen del dashboard del candidato
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol candidato o cuenta suspendida
+        '404':
+          description: Perfil no encontrado

@@ -1,0 +1,62 @@
+paths:
+  /api/empleador/empresa:
+    get:
+      summary: Obtiene los datos completos de la empresa del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Datos de la empresa obtenidos correctamente
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: El empleador aún no tiene una empresa registrada
+    post:
+      summary: Registra la empresa del empleador autenticado en estado pendiente
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre_legal
+                - correo_contacto
+              properties:
+                nombre_legal:
+                  type: string
+                  example: TechBridge S.A.
+                nit:
+                  type: string
+                  example: 0614-123456-101-2
+                descripcion:
+                  type: string
+                  example: Empresa dedicada al desarrollo de software
+                sitio_web:
+                  type: string
+                  example: https://techbridge.com
+                correo_contacto:
+                  type: string
+                  example: rrhh@techbridge.com
+                telefono_contacto:
+                  type: string
+                  example: 2222-3333
+      responses:
+        '201':
+          description: Empresa registrada correctamente
+        '400':
+          description: Datos de entrada inválidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '409':
+          description: El empleador ya tiene una empresa registrada

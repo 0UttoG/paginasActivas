@@ -227,3 +227,350 @@ paths:
           description: Token no proporcionado o inválido
         '403':
           description: Acceso restringido al rol empleador o cuenta suspendida
+    post:
+      summary: Crea una nueva oferta de empleo en estado pendiente
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - titulo
+                - categoria_id
+                - ubicacion
+                - modalidad
+                - tipo_contrato
+                - nivel_experiencia
+                - descripcion
+                - requisitos
+                - correo_contacto
+              properties:
+                titulo:
+                  type: string
+                  example: Desarrollador Backend Node.js
+                categoria_id:
+                  type: integer
+                  example: 1
+                ubicacion:
+                  type: string
+                  example: San Salvador
+                modalidad:
+                  type: string
+                  enum: [remoto, hibrido, presencial]
+                  example: remoto
+                tipo_contrato:
+                  type: string
+                  enum: [tiempo_completo, medio_tiempo, proyecto, pasantia]
+                  example: tiempo_completo
+                nivel_experiencia:
+                  type: string
+                  enum: [sin_experiencia, junior, intermedio, senior]
+                  example: intermedio
+                salario_min:
+                  type: number
+                  nullable: true
+                  example: 1000
+                salario_max:
+                  type: number
+                  nullable: true
+                  example: 1500
+                descripcion:
+                  type: string
+                  example: Buscamos un desarrollador backend con experiencia en Node.js, Express y PostgreSQL para diseñar e implementar APIs REST.
+                responsabilidades:
+                  type: string
+                  nullable: true
+                  example: Diseñar endpoints, optimizar consultas SQL y documentar en Swagger.
+                requisitos:
+                  type: string
+                  example: Experiencia comprobable de 2 años en Node.js y PostgreSQL.
+                beneficios:
+                  type: string
+                  nullable: true
+                  example: Modalidad remota y horario flexible.
+                correo_contacto:
+                  type: string
+                  example: talento@empresa.com
+                fecha_cierre:
+                  type: string
+                  format: date
+                  nullable: true
+                  example: 2026-12-31
+      responses:
+        '201':
+          description: Vacante creada correctamente en estado pendiente
+        '400':
+          description: Datos de entrada inválidos o categoría inexistente
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: El empleador aún no tiene una empresa registrada
+        '422':
+          description: La empresa debe estar aprobada para crear vacantes
+  /api/empleador/vacantes/{id}:
+    get:
+      summary: Obtiene el detalle completo de una vacante propia del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la vacante
+      responses:
+        '200':
+          description: Detalle de la vacante obtenido correctamente
+        '400':
+          description: ID de vacante inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: Vacante no encontrada o perteneciente a otra empresa
+    patch:
+      summary: Actualiza parcialmente una vacante propia del empleador autenticado
+      tags:
+        - Empleador
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la vacante
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                categoria_id:
+                  type: integer
+                ubicacion:
+                  type: string
+                modalidad:
+                  type: string
+                  enum: [remoto, hibrido, presencial]
+                tipo_contrato:
+                  type: string
+                  enum: [tiempo_completo, medio_tiempo, proyecto, pasantia]
+                nivel_experiencia:
+                  type: string
+                  enum: [sin_experiencia, junior, intermedio, senior]
+                salario_min:
+                  type: number
+                  nullable: true
+                salario_max:
+                  type: number
+                  nullable: true
+                descripcion:
+                  type: string
+                responsabilidades:
+                  type: string
+                  nullable: true
+                requisitos:
+                  type: string
+                beneficios:
+                  type: string
+                  nullable: true
+                correo_contacto:
+                  type: string
+                fecha_cierre:
+                  type: string
+                  format: date
+                  nullable: true
+      responses:
+        '200':
+          description: Vacante actualizada correctamente (si estaba publicada pasa a pendiente)
+        '400':
+          description: Datos inválidos o sin campos permitidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: Vacante no encontrada o perteneciente a otra empresa
+        '409':
+          description: No se puede editar una vacante cerrada o rechazada
+
+  /api/empleador/vacantes/{id}/cerrar:
+    patch:
+      tags: [Empleador]
+      summary: Cerrar o cancelar una vacante propia del empleador
+      description: Cambia el estado de la vacante a cerrada conservando las postulaciones existentes. Si ya está cerrada responde 200 de forma idempotente; no permite cerrar vacantes rechazadas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la vacante
+      responses:
+        '200':
+          description: Vacante cerrada correctamente (o ya cerrada de forma idempotente)
+        '400':
+          description: ID de vacante inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: Vacante no encontrada o perteneciente a otra empresa
+        '409':
+          description: No se puede cerrar una vacante rechazada
+
+  /api/empleador/postulaciones:
+    get:
+      tags: [Empleador]
+      summary: Listar postulaciones recibidas en las vacantes propias del empleador
+      description: Devuelve los aplicantes de las ofertas pertenecientes a la empresa del empleador autenticado, con filtro opcional por vacante_id y estado, y paginación.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: vacante_id
+          required: false
+          schema:
+            type: integer
+          description: Filtrar por ID de una vacante propia
+        - in: query
+          name: estado
+          required: false
+          schema:
+            type: string
+            enum: [nueva, en_proceso, contratado, rechazado]
+          description: Filtrar por estado de la postulación
+        - in: query
+          name: pagina
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Número de página
+        - in: query
+          name: limite
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Cantidad de registros por página (máximo 100)
+      responses:
+        '200':
+          description: Lista paginada de postulaciones de las vacantes propias
+        '400':
+          description: Parámetros de filtro inválidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+
+  /api/empleador/postulaciones/{id}/candidato:
+    get:
+      tags: [Empleador]
+      summary: Obtener perfil de contacto e historial laboral del candidato de una postulación propia
+      description: Devuelve los datos de contacto, detalles de la postulación e historial laboral del candidato que aplicó a una vacante de la empresa del empleador autenticado.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la postulación
+      responses:
+        '200':
+          description: Perfil e historial laboral del candidato postulante
+        '400':
+          description: ID de postulación inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: Postulación no encontrada o perteneciente a otra empresa
+
+  /api/empleador/postulaciones/{id}/cv:
+    get:
+      tags: [Empleador]
+      summary: Descargar o consultar el CV asociado a una postulación propia
+      description: Entrega el archivo de CV histórico guardado en postulaciones.ruta_cv cuando la postulación pertenece a una vacante de la empresa del empleador autenticado.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la postulación
+      responses:
+        '200':
+          description: Archivo de CV enviado correctamente
+        '400':
+          description: ID de postulación inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: Postulación no encontrada, ajena o archivo de CV no disponible
+
+  /api/empleador/postulaciones/{id}/estado:
+    patch:
+      tags: [Empleador]
+      summary: Actualizar el estado de una postulación propia (en_proceso, contratado o rechazado)
+      description: Cambia el estado de una postulación de las vacantes propias del empleador respetando las transiciones válidas (nueva -> en_proceso/contratado/rechazado; en_proceso -> contratado/rechazado), notificando al candidato y registrando bitácora en la misma transacción.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la postulación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [en_proceso, contratado, rechazado]
+      responses:
+        '200':
+          description: Estado de la postulación actualizado correctamente (o idempotente)
+        '400':
+          description: ID o estado inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol empleador o cuenta suspendida
+        '404':
+          description: Postulación no encontrada o perteneciente a otra empresa
+        '409':
+          description: Transición de estado no permitida desde el estado actual

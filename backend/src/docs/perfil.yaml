@@ -1,0 +1,147 @@
+paths:
+  /api/perfil:
+    get:
+      summary: Obtiene los datos del perfil del candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Perfil del candidato obtenido correctamente
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+        '404':
+          description: Perfil no encontrado
+
+    patch:
+      summary: Actualiza parcialmente los datos del perfil del candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombres:
+                  type: string
+                  example: Ana María
+                apellidos:
+                  type: string
+                  example: García López
+                telefono:
+                  type: string
+                  nullable: true
+                  example: 7123-4567
+                recibe_email:
+                  type: boolean
+                  example: true
+                recibe_sms:
+                  type: boolean
+                  example: false
+      responses:
+        '200':
+          description: Perfil actualizado correctamente
+        '400':
+          description: Datos de entrada inválidos o sin campos enviados
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+        '404':
+          description: Perfil no encontrado
+
+  /api/perfil/cv:
+    get:
+      summary: Descarga o visualiza el CV actual del candidato autenticado
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Archivo del CV actual del candidato
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+        '404':
+          description: No hay CV registrado o el archivo no existe
+
+    post:
+      summary: Sube o reemplaza el CV del candidato (PDF o DOCX, máximo 5 MB)
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                archivo:
+                  type: string
+                  format: binary
+                  description: Archivo PDF o DOCX del currículum (máximo 5 MB)
+              required:
+                - archivo
+      responses:
+        '201':
+          description: CV subido correctamente
+        '400':
+          description: Archivo ausente o formato multipart inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+        '413':
+          description: El archivo supera los 5 MB
+        '415':
+          description: Tipo de archivo no permitido (solo PDF o DOCX)
+
+  /api/perfil/postulaciones:
+    post:
+      summary: Registra una postulación del candidato autenticado a una vacante
+      tags:
+        - Perfil Candidato
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vacante_id:
+                  type: integer
+                  example: 1
+                carta_presentacion:
+                  type: string
+                  nullable: true
+                  example: Me interesa participar en el proceso de selección.
+              required:
+                - vacante_id
+      responses:
+        '201':
+          description: Postulación registrada correctamente
+        '400':
+          description: Datos inválidos
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Rol no permitido o cuenta suspendida
+        '404':
+          description: Vacante no encontrada o no disponible
+        '409':
+          description: Ya existe una postulación para esta vacante
+        '422':
+          description: El candidato debe cargar un CV antes de postular

@@ -1,0 +1,198 @@
+paths:
+  /api/inicio/metricas:
+    get:
+      summary: Obtiene métricas generales del portal para el inicio
+      tags:
+        - Público
+      responses:
+        '200':
+          description: Métricas obtenidas correctamente
+
+  /api/catalogos/categorias-empleo:
+    get:
+      summary: Lista el catálogo de categorías de empleo
+      tags:
+        - Público
+      responses:
+        '200':
+          description: Lista de categorías de empleo
+
+  /api/vacantes:
+    get:
+      summary: Busca y lista vacantes públicas vigentes
+      tags:
+        - Público
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Texto de búsqueda en título, descripción o empresa
+        - in: query
+          name: ubicacion
+          schema:
+            type: string
+        - in: query
+          name: modalidad
+          schema:
+            type: string
+            enum: [remoto, hibrido, presencial]
+        - in: query
+          name: tipo_contrato
+          schema:
+            type: string
+            enum: [tiempo_completo, medio_tiempo, proyecto, pasantia]
+        - in: query
+          name: nivel_experiencia
+          schema:
+            type: string
+            enum: [sin_experiencia, junior, intermedio, senior]
+        - in: query
+          name: categoria_id
+          schema:
+            type: integer
+        - in: query
+          name: salario_min
+          schema:
+            type: number
+        - in: query
+          name: salario_max
+          schema:
+            type: number
+        - in: query
+          name: desde
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Listado paginado de vacantes
+        '400':
+          description: Parámetros de filtro inválidos
+
+  /api/vacantes/{id}:
+    get:
+      summary: Obtiene el detalle público de una vacante vigente
+      tags:
+        - Público
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Detalle de la vacante
+        '400':
+          description: ID inválido
+        '404':
+          description: Vacante no encontrada
+
+  /api/empresas:
+    get:
+      summary: Lista empresas aprobadas con su calificación promedio
+      tags:
+        - Público
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Búsqueda por nombre legal de la empresa
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Listado paginado de empresas aprobadas
+
+  /api/empresas/{id}:
+    get:
+      summary: Obtiene la ficha pública de una empresa aprobada
+      tags:
+        - Público
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Ficha pública de la empresa
+        '400':
+          description: ID inválido
+        '404':
+          description: Empresa no encontrada
+
+  /api/empresas/{id}/vacantes:
+    get:
+      summary: Lista vacantes públicas vigentes de una empresa
+      tags:
+        - Público
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Vacantes activas de la empresa
+        '404':
+          description: Empresa no encontrada
+
+  /api/empresas/{id}/valoraciones:
+    get:
+      summary: Lista valoraciones aprobadas de una empresa
+      tags:
+        - Público
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+        - in: query
+          name: pagina
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limite
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Listado de valoraciones aprobadas
+        '404':
+          description: Empresa no encontrada

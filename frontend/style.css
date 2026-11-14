@@ -195,3 +195,12 @@ h1, h2, h3, h4, h5, h6 {
     border-color: rgba(0,0,0,0.125);
     font-weight: 600;
 }
+
+/* Utilidades para Modales */
+.nav-pills .nav-link.active {
+    background-color: var(--color-berry) !important;
+    color: white !important;
+}
+.nav-pills .nav-link {
+    color: var(--color-midnight);
+}

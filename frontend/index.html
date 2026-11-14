@@ -14,8 +14,8 @@
             <h1 class="logo-text m-0 fs-3">Opportunity Bridge</h1>
             <div>
                 <!-- Estos botones abrirán modales o redireccionarán cuando el backend esté listo -->
-                <button class="btn btn-outline-light me-2 fw-medium" id="btnLogin">Inicio de sesión</button>
-                <button class="btn btn-registro fw-medium text-white" id="btnRegistro">Registro</button>
+                <button class="btn btn-outline-light me-2 fw-medium" data-bs-toggle="modal" data-bs-target="#loginModal">Inicio de sesión</button>
+                <button class="btn btn-registro fw-medium text-white" data-bs-toggle="modal" data-bs-target="#registroModal">Registro</button>
             </div>
         </div>
     </header>
@@ -186,6 +186,114 @@
             <p class="mb-0">&copy; 2026 Opportunity Bridge. Proyecto de Desarrollo de Páginas Web Activas.</p>
         </div>
     </footer>
+
+
+    <!-- Modal de Inicio de Sesión -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold text-midnight" id="loginModalLabel">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formLogin">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium text-midnight small">Correo electrónico</label>
+                            <input type="email" class="form-control" id="loginEmail" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-medium text-midnight small">Contraseña</label>
+                            <input type="password" class="form-control" id="loginPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-registro text-white w-100 py-2">Ingresar a mi cuenta</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Registro -->
+    <div class="modal fade" id="registroModal" tabindex="-1" aria-labelledby="registroModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold text-midnight" id="registroModalLabel">Crear una cuenta nueva</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <ul class="nav nav-pills mb-4 justify-content-center" id="registerTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active fw-medium" id="tab-candidato" data-bs-toggle="pill" data-bs-target="#pills-candidato" type="button" role="tab">Soy Candidato</button>
+                        </li>
+                        <li class="nav-item ms-2" role="presentation">
+                            <button class="nav-link fw-medium" id="tab-empresa" data-bs-toggle="pill" data-bs-target="#pills-empresa" type="button" role="tab">Soy Empresa</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="registerTabsContent">
+                        <!-- Formulario Crear Candidato -->
+                        <div class="tab-pane fade show active" id="pills-candidato" role="tabpanel">
+                            <form id="formRegistroCandidato" class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">Nombre completo</label>
+                                    <input type="text" class="form-control" id="regCandName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">Documento (DUI/Pasaporte)</label>
+                                    <input type="text" class="form-control" id="regCandDoc" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-medium text-midnight small">Correo electrónico</label>
+                                    <input type="email" class="form-control" id="regCandEmail" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">Contraseña</label>
+                                    <input type="password" class="form-control" id="regCandPass" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">Confirmar contraseña</label>
+                                    <input type="password" class="form-control" id="regCandPassConfirm" required>
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-registro text-white w-100 py-2">Registrarme como Candidato</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Formulario Crear Empresa -->
+                        <div class="tab-pane fade" id="pills-empresa" role="tabpanel">
+                            <form id="formRegistroEmpresa" class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">Nombre de la Empresa</label>
+                                    <input type="text" class="form-control" id="regEmpName" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">NIT / Registro Comercial</label>
+                                    <input type="text" class="form-control" id="regEmpNit" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-medium text-midnight small">Correo corporativo</label>
+                                    <input type="email" class="form-control" id="regEmpEmail" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">Contraseña</label>
+                                    <input type="password" class="form-control" id="regEmpPass" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-midnight small">Confirmar contraseña</label>
+                                    <input type="password" class="form-control" id="regEmpPassConfirm" required>
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn btn-registro text-white w-100 py-2">Registrar mi Empresa</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

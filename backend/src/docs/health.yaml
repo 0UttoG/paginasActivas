@@ -17,3 +17,102 @@ paths:
           description: Conexión exitosa
         '503':
           description: Error de conexión con la base de datos
+
+  /api/usuarios/registro:
+    post:
+      summary: Registra un nuevo usuario
+      tags:
+        - Usuarios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombres:
+                  type: string
+                  description: Nombres del usuario
+                  example: Juan
+                apellidos:
+                  type: string
+                  description: Apellidos del usuario
+                  example: Pérez
+                correo:
+                  type: string
+                  description: Correo electrónico del usuario
+                  example: juan.perez@correo.com
+                contrasena:
+                  type: string
+                  description: Contraseña del usuario (8 a 72 caracteres)
+                  example: MiClaveSegura123
+                telefono:
+                  type: string
+                  description: Teléfono de contacto (opcional)
+                  example: 7123-4567
+                rol_id:
+                  type: integer
+                  description: ID del rol (1 candidato, 2 empleador; no se permite administrador)
+                  example: 1
+              required:
+                - nombres
+                - apellidos
+                - correo
+                - contrasena
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '400':
+          description: Error en los datos proporcionados
+        '403':
+          description: No se permite registrar administrador
+        '409':
+          description: El correo ya está registrado
+
+  /api/usuarios/login:
+    post:
+      summary: Inicia sesión y devuelve un token JWT
+      tags:
+        - Usuarios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                correo:
+                  type: string
+                  description: Correo electrónico del usuario
+                  example: juan.perez@correo.com
+                contrasena:
+                  type: string
+                  description: Contraseña del usuario
+                  example: MiClaveSegura123
+              required:
+                - correo
+                - contrasena
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+        '400':
+          description: Datos de entrada inválidos
+        '401':
+          description: Correo o contraseña incorrectos
+        '403':
+          description: La cuenta se encuentra suspendida
+
+  /api/usuarios/me:
+    get:
+      summary: Obtiene los datos del usuario autenticado actual
+      tags:
+        - Usuarios
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario autenticado obtenido correctamente
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: La cuenta se encuentra suspendida

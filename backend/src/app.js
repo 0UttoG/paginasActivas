@@ -3,10 +3,12 @@ import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
 import { pool } from './db.js';
-import {errorHandler} from './middlewares/errorHandler.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import usuarioRoutes from './routes/usuario.routes.js';
 
 const app = express();
-app.use(cors({origin: process.env.FRONTEND_URL || 'http://localhost:5173'}));
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+app.use(express.json());
 app.get('/api-docs.json', (req, res) => res.json(swaggerSpec));
 
 //obtener el estado de la conexión a la base de datos
@@ -14,8 +16,7 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-
-app.get('/health/db', async (req, res) =>{
+app.get('/health/db', async (req, res) => {
     try {
         //add to sql, from get to information from the database
         const result = await pool.query(
@@ -24,12 +25,16 @@ app.get('/health/db', async (req, res) =>{
 
         res.status(200).json({ status: 'ok', tables: result.rows });
     }
-    catch(err) {
+    catch (err) {
         console.error('error al conectarse a supabase', err.message);
-        res.status(500).json({ status: 'error', message: 'error al conectarse a supabase' });
+        res.status(503).json({ status: 'error', message: 'error al conectarse a supabase' });
     }
-}
-);
+});
+
+//rutas de autenticación y usuarios
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/auth', usuarioRoutes);
+app.use('/usuarios', usuarioRoutes);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 //capturar rutas inexistentes
@@ -37,7 +42,7 @@ app.use((req, res) => {
     res.status(404).json({
         status: 'error',
         message: 'Ruta no encontrada'
-    })
+    });
 });
 app.use(errorHandler);
 

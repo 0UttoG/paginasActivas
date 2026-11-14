@@ -1,0 +1,19 @@
+paths:
+  /health:
+    get:
+      summary: Verifica que el servidor Express esté encendido
+      tags:
+        - Diagnóstico
+      responses:
+        '200':
+          description: Servidor activo
+  /health/db:
+    get:
+      summary: Verifica conexión a Supabase y lista las tablas
+      tags:
+        - Diagnóstico
+      responses:
+        '200':
+          description: Conexión exitosa
+        '503':
+          description: Error de conexión con la base de datos

@@ -1364,3 +1364,139 @@ export const actualizarEstadoPostulacionEmpleador = async (usuarioId, postulacio
         client.release();
     }
 };
+
+//obtener resumen del dashboard del empleador autenticado en snapshot consistente (Q19, D10, T25/T26)
+export const obtenerDashboardEmpleador = async (usuarioId) => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
+
+        const { rows: empresasRows } = await client.query(
+            `SELECT id, nombre_legal, estado_verificacion
+            FROM empresas
+            WHERE usuario_id = $1
+            LIMIT 1`,
+            [usuarioId]
+        );
+
+        if (empresasRows.length === 0) {
+            await client.query('COMMIT');
+            return {
+                empresa: null,
+                requiere_crear_empresa: true,
+                ofertas: {
+                    total: 0,
+                    borrador: 0,
+                    pendiente: 0,
+                    publicada: 0,
+                    oculta: 0,
+                    rechazada: 0,
+                    cerrada: 0,
+                    publicadas_vigentes: 0
+                },
+                postulaciones: {
+                    total: 0,
+                    nueva: 0,
+                    en_proceso: 0,
+                    contratado: 0,
+                    rechazado: 0
+                },
+                ultimas_postulaciones: []
+            };
+        }
+
+        const empresa = empresasRows[0];
+
+        const { rows: ofertasRows } = await client.query(
+            `SELECT
+                COUNT(*)::int AS total,
+                COUNT(*) FILTER (WHERE estado = 'borrador')::int AS borrador,
+                COUNT(*) FILTER (WHERE estado = 'pendiente')::int AS pendiente,
+                COUNT(*) FILTER (WHERE estado = 'publicada')::int AS publicada,
+                COUNT(*) FILTER (WHERE estado = 'oculta')::int AS oculta,
+                COUNT(*) FILTER (WHERE estado = 'rechazada')::int AS rechazada,
+                COUNT(*) FILTER (WHERE estado = 'cerrada')::int AS cerrada,
+                COUNT(*) FILTER (
+                    WHERE estado = 'publicada'
+                    AND (fecha_cierre IS NULL OR fecha_cierre >= (now() AT TIME ZONE 'America/El_Salvador')::date)
+                    AND EXISTS (
+                        SELECT 1 FROM empresas e
+                        WHERE e.id = $1 AND e.estado_verificacion = 'aprobada'
+                    )
+                )::int AS publicadas_vigentes
+            FROM vacantes
+            WHERE empresa_id = $1`,
+            [empresa.id]
+        );
+
+        const { rows: postulacionesRows } = await client.query(
+            `SELECT
+                COUNT(*)::int AS total,
+                COUNT(*) FILTER (WHERE p.estado = 'nueva')::int AS nueva,
+                COUNT(*) FILTER (WHERE p.estado = 'en_proceso')::int AS en_proceso,
+                COUNT(*) FILTER (WHERE p.estado = 'contratado')::int AS contratado,
+                COUNT(*) FILTER (WHERE p.estado = 'rechazado')::int AS rechazado
+            FROM postulaciones p
+            JOIN vacantes v ON v.id = p.vacante_id
+            WHERE v.empresa_id = $1`,
+            [empresa.id]
+        );
+
+        const { rows: ultimasPostulaciones } = await client.query(
+            `SELECT
+                p.id,
+                p.vacante_id,
+                v.titulo,
+                p.candidato_id,
+                u.nombres,
+                u.apellidos,
+                p.estado,
+                p.fecha_postulacion
+            FROM postulaciones p
+            JOIN vacantes v ON v.id = p.vacante_id
+            JOIN usuarios u ON u.id = p.candidato_id
+            WHERE v.empresa_id = $1
+            ORDER BY p.fecha_postulacion DESC, p.id DESC
+            LIMIT 5`,
+            [empresa.id]
+        );
+
+        await client.query('COMMIT');
+
+        const of = ofertasRows[0] || {};
+        const po = postulacionesRows[0] || {};
+
+        return {
+            empresa: {
+                id: empresa.id,
+                nombre_legal: empresa.nombre_legal,
+                estado_verificacion: empresa.estado_verificacion
+            },
+            requiere_crear_empresa: false,
+            ofertas: {
+                total: Number(of.total ?? 0),
+                borrador: Number(of.borrador ?? 0),
+                pendiente: Number(of.pendiente ?? 0),
+                publicada: Number(of.publicada ?? 0),
+                oculta: Number(of.oculta ?? 0),
+                rechazada: Number(of.rechazada ?? 0),
+                cerrada: Number(of.cerrada ?? 0),
+                publicadas_vigentes: Number(of.publicadas_vigentes ?? 0)
+            },
+            postulaciones: {
+                total: Number(po.total ?? 0),
+                nueva: Number(po.nueva ?? 0),
+                en_proceso: Number(po.en_proceso ?? 0),
+                contratado: Number(po.contratado ?? 0),
+                rechazado: Number(po.rechazado ?? 0)
+            },
+            ultimas_postulaciones: ultimasPostulaciones
+        };
+    } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        throw error;
+    } finally {
+        client.release();
+    }
+};

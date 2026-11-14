@@ -14,7 +14,8 @@ import {
     listarPostulacionesEmpleadorController,
     obtenerCandidatoPostulacionEmpleadorController,
     descargarCvPostulacionEmpleadorController,
-    actualizarEstadoPostulacionEmpleadorController
+    actualizarEstadoPostulacionEmpleadorController,
+    obtenerDashboardEmpleadorController
 } from '../controllers/empleador.controller.js';
 import { authHeader, permitirRoles } from '../middlewares/authHandler.js';
 import { subirLogoEmpresa, subirDocumentoEmpresa } from '../middlewares/uploadHandler.js';
@@ -22,6 +23,7 @@ import { subirLogoEmpresa, subirDocumentoEmpresa } from '../middlewares/uploadHa
 const router = Router();
 
 //rutas del área de empleador
+router.get('/dashboard', authHeader, permitirRoles('empleador'), obtenerDashboardEmpleadorController);
 router.get('/empresa', authHeader, permitirRoles('empleador'), obtenerEmpresaEmpleadorController);
 router.post('/empresa', authHeader, permitirRoles('empleador'), crearEmpresaEmpleadorController);
 router.patch('/empresa', authHeader, permitirRoles('empleador'), actualizarEmpresaEmpleadorController);

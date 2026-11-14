@@ -13,7 +13,8 @@ import {
     listarPostulacionesEmpleador,
     obtenerCandidatoPostulacionEmpleador,
     obtenerArchivoCvPostulacionEmpleador,
-    actualizarEstadoPostulacionEmpleador
+    actualizarEstadoPostulacionEmpleador,
+    obtenerDashboardEmpleador
 } from '../services/empleadorServices.js';
 
 //controlador para obtener la empresa del empleador autenticado
@@ -245,6 +246,21 @@ export const actualizarEstadoPostulacionEmpleadorController = async (req, res) =
         const status = error.statusCode || 500;
         return res.status(status).json({
             mensaje: error.message || 'error al actualizar el estado de la postulación'
+        });
+    }
+};
+
+//controlador para obtener el resumen del dashboard de la empresa del empleador autenticado
+export const obtenerDashboardEmpleadorController = async (req, res) => {
+    try {
+        const dashboard = await obtenerDashboardEmpleador(req.user.id);
+        return res.status(200).json({
+            data: dashboard
+        });
+    } catch (error) {
+        const status = error.statusCode || 500;
+        return res.status(status).json({
+            mensaje: error.message || 'error al obtener el dashboard del empleador'
         });
     }
 };

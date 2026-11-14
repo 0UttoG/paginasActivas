@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opportunity Bridge - Panel Administrativo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+    <!-- Navbar Admin -->
+    <header class="header-main text-white py-3 shadow-sm">
+        <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+            <h1 class="logo-text m-0 fs-4">Opportunity Bridge <span class="fs-6 fw-normal text-white-50 ms-2">| Panel de Administración</span></h1>
+            <div class="d-flex align-items-center gap-3">
+                <span class="fw-medium">Admin: SuperUsuario</span>
+                <div class="rounded-circle bg-white text-midnight d-flex justify-content-center align-items-center fw-bold" style="width: 35px; height: 35px;">SU</div>
+                <a href="index.html" class="btn btn-sm btn-outline-light ms-2">Salir del Panel</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid px-4 py-4 flex-grow-1">
+        <div class="row g-4">
+            
+            <!-- Sidebar Administrativo -->
+            <div class="col-md-2">
+                <div class="bg-white rounded-3 shadow-sm border overflow-hidden position-sticky" style="top: 20px;">
+                    <div class="list-group list-group-flush" id="adminTabs" role="tablist">
+                        <button class="list-group-item list-group-item-action active bg-light text-midnight fw-medium border-start border-4 border-midnight py-3" id="dashboard-tab" data-bs-toggle="list" data-bs-target="#dashboard" type="button" role="tab">Dashboard Global</button>
+                        <button class="list-group-item list-group-item-action text-muted py-3" id="usuarios-tab" data-bs-toggle="list" data-bs-target="#usuarios" type="button" role="tab">Gestión de Usuarios</button>
+                        <button class="list-group-item list-group-item-action text-muted py-3" id="empresas-tab" data-bs-toggle="list" data-bs-target="#empresas" type="button" role="tab">Empresas y Ofertas</button>
+                        <button class="list-group-item list-group-item-action text-muted py-3" id="reportes-tab" data-bs-toggle="list" data-bs-target="#reportes" type="button" role="tab">Reportes del Sistema</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido Principal Admin -->
+            <div class="col-md-10">
+                <div class="tab-content" id="adminTabsContent">
+                    
+                    <!-- 1. Dashboard Global -->
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+                        <h4 class="text-midnight fw-bold mb-4">Métricas Globales del Sistema</h4>
+                        
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-3">
+                                <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
+                                    <h2 class="fw-bold mb-1 text-midnight">12,543</h2>
+                                    <p class="text-muted mb-0 fw-medium small">Usuarios Totales</p>
+                                    <span class="badge bg-success bg-opacity-10 text-success mt-2">↑ +12% este mes</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
+                                    <h2 class="fw-bold mb-1 text-midnight">342</h2>
+                                    <p class="text-muted mb-0 fw-medium small">Empresas Registradas</p>
+                                    <span class="badge bg-success bg-opacity-10 text-success mt-2">↑ +5 nuevas esta semana</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
+                                    <h2 class="fw-bold mb-1 text-midnight">1,890</h2>
+                                    <p class="text-muted mb-0 fw-medium small">Ofertas Activas</p>
+                                    <span class="badge bg-warning bg-opacity-10 text-warning mt-2">→ Estable</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
+                                    <h2 class="fw-bold mb-1 text-midnight">45</h2>
+                                    <p class="text-muted mb-0 fw-medium small">Reportes Pendientes</p>
+                                    <span class="badge bg-danger bg-opacity-10 text-danger mt-2">Atención requerida</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3 shadow-sm border p-4">
+                            <h5 class="fw-bold mb-3 text-midnight">Actividad Reciente del Servidor</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm text-muted">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Acción</th>
+                                            <th>Entidad</th>
+                                            <th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminLogsTable">
+                                        <tr>
+                                            <td>2026-11-13 22:15:04</td>
+                                            <td>POST /api/jobs</td>
+                                            <td>Empresa ID: 890</td>
+                                            <td><span class="badge bg-success">201 Created</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>2026-11-13 22:12:10</td>
+                                            <td>POST /auth/login</td>
+                                            <td>User ID: 1245</td>
+                                            <td><span class="badge bg-success">200 OK</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>2026-11-13 22:05:33</td>
+                                            <td>PUT /api/users/88</td>
+                                            <td>User ID: 88</td>
+                                            <td><span class="badge bg-danger">401 Unauthorized</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Gestión de Usuarios -->
+                    <div class="tab-pane fade" id="usuarios" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="text-midnight fw-bold m-0">Gestión de Usuarios (Candidatos)</h4>
+                            <div class="input-group w-auto">
+                                <input type="text" class="form-control form-control-sm" placeholder="Buscar por email o DUI" id="adminSearchUser">
+                                <button class="btn btn-sm btn-outline-secondary">Buscar</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3 shadow-sm border p-0 overflow-hidden">
+                            <table class="table table-hover align-middle m-0">
+                                <thead class="table-light text-muted">
+                                    <tr>
+                                        <th class="ps-4">ID</th>
+                                        <th>Nombre Completo</th>
+                                        <th>Email</th>
+                                        <th>Estado</th>
+                                        <th class="text-end pe-4">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUsersTable">
+                                    <tr>
+                                        <td class="ps-4 text-muted small">#U-1045</td>
+                                        <td class="fw-medium">William Morales</td>
+                                        <td>william@example.com</td>
+                                        <td><span class="badge bg-success">Activo</span></td>
+                                        <td class="text-end pe-4">
+                                            <button class="btn btn-sm btn-outline-primary py-0 px-2 me-1">Editar</button>
+                                            <button class="btn btn-sm btn-outline-danger py-0 px-2">Bloquear</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4 text-muted small">#U-1046</td>
+                                        <td class="fw-medium">Nestor Uto</td>
+                                        <td>nestor@example.com</td>
+                                        <td><span class="badge bg-danger">Bloqueado</span></td>
+                                        <td class="text-end pe-4">
+                                            <button class="btn btn-sm btn-outline-primary py-0 px-2 me-1">Editar</button>
+                                            <button class="btn btn-sm btn-outline-success py-0 px-2">Desbloquear</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 3. Empresas y Ofertas -->
+                    <div class="tab-pane fade" id="empresas" role="tabpanel">
+                        <h4 class="text-midnight fw-bold mb-4">Moderación de Ofertas de Empleo</h4>
+                        
+                        <div class="bg-white rounded-3 shadow-sm border p-4">
+                            <p class="text-muted small mb-4">Revisa y gestiona las ofertas publicadas por las empresas para asegurar el cumplimiento de las normativas de la plataforma.</p>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light text-muted">
+                                        <tr>
+                                            <th>Empresa</th>
+                                            <th>Título de la Oferta</th>
+                                            <th>Fecha Pub.</th>
+                                            <th>Estado de la Oferta</th>
+                                            <th>Moderación</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminJobsTable">
+                                        <tr>
+                                            <td class="fw-medium">TechSolutions El Salvador</td>
+                                            <td>Desarrollador Full Stack Java/Angular</td>
+                                            <td>13 Nov 2026</td>
+                                            <td><span class="badge bg-success">Pública</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-warning py-0 px-2">Ocultar (Inactivar)</button>
+                                                <button class="btn btn-sm btn-outline-danger py-0 px-2 ms-1">Eliminar</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">Creative Studio SA</td>
+                                            <td>Diseñador Gráfico Jr.</td>
+                                            <td>12 Nov 2026</td>
+                                            <td><span class="badge bg-secondary">Inactiva (Oculta)</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-success py-0 px-2">Aprobar/Publicar</button>
+                                                <button class="btn btn-sm btn-outline-danger py-0 px-2 ms-1">Eliminar</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Reportes -->
+                    <div class="tab-pane fade" id="reportes" role="tabpanel">
+                        <div class="bg-white rounded-3 shadow-sm border p-5 text-center">
+                            <svg width="48" height="48" fill="#B8C480" viewBox="0 0 16 16" class="mb-3">
+                                <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
+                                <path d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
+                            </svg>
+                            <h4 class="fw-bold text-midnight">Módulo de Reportes</h4>
+                            <p class="text-muted">La exportación en PDF y CSV de reportes financieros e informes de plataforma estará disponible en la próxima versión.</p>
+                            <button class="btn btn-outline-secondary mt-2 disabled">Generar Reporte Mensual (Próximamente)</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

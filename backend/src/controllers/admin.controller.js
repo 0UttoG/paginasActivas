@@ -6,7 +6,10 @@ import {
     obtenerArchivoDocumentoEmpresaAdmin,
     actualizarEstadoEmpresaAdmin,
     listarVacantesAdmin,
-    actualizarEstadoVacanteAdmin
+    actualizarEstadoVacanteAdmin,
+    listarCategoriasEmpleoAdmin,
+    crearCategoriaEmpleoAdmin,
+    actualizarCategoriaEmpleoAdmin
 } from '../services/adminServices.js';
 
 //controlador para obtener el resumen de contadores del panel administrativo
@@ -124,6 +127,53 @@ export const actualizarEstadoVacanteAdminController = async (req, res) => {
         const status = error.statusCode || 500;
         return res.status(status).json({
             mensaje: error.message || 'error al actualizar el estado de la vacante'
+        });
+    }
+};
+
+//controlador para listar categorías de empleo en el panel administrativo
+export const listarCategoriasEmpleoAdminController = async (req, res) => {
+    try {
+        const categorias = await listarCategoriasEmpleoAdmin();
+        return res.status(200).json({
+            data: categorias
+        });
+    } catch (error) {
+        const status = error.statusCode || 500;
+        return res.status(status).json({
+            mensaje: error.message || 'error al listar las categorías de empleo'
+        });
+    }
+};
+
+//controlador para crear una nueva categoría de empleo
+export const crearCategoriaEmpleoAdminController = async (req, res) => {
+    try {
+        const categoria = await crearCategoriaEmpleoAdmin(req.user.id, req.body);
+        return res.status(201).json({
+            mensaje: 'categoría de empleo creada correctamente',
+            data: categoria
+        });
+    } catch (error) {
+        const status = error.statusCode || 500;
+        return res.status(status).json({
+            mensaje: error.message || 'error al crear la categoría de empleo'
+        });
+    }
+};
+
+//controlador para actualizar el nombre de una categoría de empleo existente
+export const actualizarCategoriaEmpleoAdminController = async (req, res) => {
+    try {
+        const categoria = await actualizarCategoriaEmpleoAdmin(req.user.id, req.params.id, req.body);
+        return res.status(200).json({
+            mensaje: 'categoría de empleo actualizada correctamente',
+            data: categoria
+        });
+    } catch (error) {
+        const status = error.statusCode || 500;
+        return res.status(status).json({
+            mensaje: error.message || 'error al actualizar la categoría de empleo'
         });
     }
 };

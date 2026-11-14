@@ -839,3 +839,127 @@ export const actualizarEstadoVacanteAdmin = async (adminId, vacanteIdParam, dato
         client.release();
     }
 };
+
+//validar nombre obligatorio y longitud máxima para categorías de empleo
+const validarNombreCategoriaEmpleo = (datos = {}) => {
+    const cuerpo = datos && typeof datos === 'object' && !Array.isArray(datos) ? datos : {};
+    if (typeof cuerpo.nombre !== 'string') {
+        throw crearError('el nombre de la categoría es obligatorio y no debe superar 100 caracteres', 400);
+    }
+    const nombreLimpio = cuerpo.nombre.trim();
+    if (!nombreLimpio || nombreLimpio.length > 100) {
+        throw crearError('el nombre de la categoría es obligatorio y no debe superar 100 caracteres', 400);
+    }
+    return nombreLimpio;
+};
+
+//listar categorías de empleo ordenadas alfabéticamente para el panel administrativo (Q05, Q15, D12)
+export const listarCategoriasEmpleoAdmin = async () => {
+    const { rows } = await pool.query(
+        'SELECT id, nombre FROM categorias_empleo ORDER BY nombre ASC, id ASC'
+    );
+    return rows;
+};
+
+//crear una nueva categoría de empleo evitando duplicados sin distinguir mayúsculas y registrando bitácora (Q05, Q15, D12)
+export const crearCategoriaEmpleoAdmin = async (adminId, datos = {}) => {
+    const nombreLimpio = validarNombreCategoriaEmpleo(datos);
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const { rows: existentes } = await client.query(
+            'SELECT id FROM categorias_empleo WHERE LOWER(BTRIM(nombre)) = LOWER($1) LIMIT 1',
+            [nombreLimpio]
+        );
+        if (existentes.length > 0) {
+            throw crearError('ya existe una categoría de empleo con ese nombre', 409);
+        }
+
+        const { rows: creadas } = await client.query(
+            'INSERT INTO categorias_empleo (nombre) VALUES ($1) RETURNING id, nombre',
+            [nombreLimpio]
+        );
+        const creada = creadas[0];
+
+        await client.query(
+            `INSERT INTO bitacora (usuario_id, accion, entidad, entidad_id, detalle)
+            VALUES ($1, $2, $3, $4, $5)`,
+            [adminId, 'crear_categoria_empleo', 'categoria_empleo', creada.id, `Categoría de empleo creada: ${creada.nombre}`]
+        );
+
+        await client.query('COMMIT');
+        return creada;
+    } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        if (error.code === '23505') {
+            throw crearError('ya existe una categoría de empleo con ese nombre', 409);
+        }
+        throw error;
+    } finally {
+        client.release();
+    }
+};
+
+//renombrar una categoría de empleo existente validando unicidad sin distinguir mayúsculas y registrando bitácora (Q05, Q15, D12)
+export const actualizarCategoriaEmpleoAdmin = async (adminId, categoriaIdParam, datos = {}) => {
+    const categoriaId = validarIdPositivo(categoriaIdParam, 'categoría');
+    const nombreLimpio = validarNombreCategoriaEmpleo(datos);
+
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        const { rows: actuales } = await client.query(
+            'SELECT id, nombre FROM categorias_empleo WHERE id = $1 FOR UPDATE',
+            [categoriaId]
+        );
+        if (actuales.length === 0) {
+            throw crearError('categoría de empleo no encontrada', 404);
+        }
+
+        const categoriaActual = actuales[0];
+        if (categoriaActual.nombre === nombreLimpio) {
+            await client.query('COMMIT');
+            return categoriaActual;
+        }
+
+        const { rows: duplicadas } = await client.query(
+            'SELECT id FROM categorias_empleo WHERE LOWER(BTRIM(nombre)) = LOWER($1) AND id <> $2 LIMIT 1',
+            [nombreLimpio, categoriaId]
+        );
+        if (duplicadas.length > 0) {
+            throw crearError('ya existe una categoría de empleo con ese nombre', 409);
+        }
+
+        const { rows: actualizadas } = await client.query(
+            'UPDATE categorias_empleo SET nombre = $1 WHERE id = $2 RETURNING id, nombre',
+            [nombreLimpio, categoriaId]
+        );
+        const actualizada = actualizadas[0];
+
+        await client.query(
+            `INSERT INTO bitacora (usuario_id, accion, entidad, entidad_id, detalle)
+            VALUES ($1, $2, $3, $4, $5)`,
+            [
+                adminId,
+                'actualizar_categoria_empleo',
+                'categoria_empleo',
+                categoriaActual.id,
+                `Categoría de empleo actualizada de "${categoriaActual.nombre}" a "${actualizada.nombre}"`
+            ]
+        );
+
+        await client.query('COMMIT');
+        return actualizada;
+    } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        if (error.code === '23505') {
+            throw crearError('ya existe una categoría de empleo con ese nombre', 409);
+        }
+        throw error;
+    } finally {
+        client.release();
+    }
+};

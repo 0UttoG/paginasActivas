@@ -316,3 +316,85 @@ paths:
           description: Transición de estado de vacante no permitida
         '422':
           description: Empresa no aprobada, campos incompletos o fecha de cierre vencida al intentar publicar
+  /api/admin/categorias-empleo:
+    get:
+      tags: [Administración]
+      summary: Listar categorías de empleo desde administración
+      description: Devuelve el catálogo completo de categorías de empleo ordenado alfabéticamente por nombre.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Listado de categorías obtenido correctamente
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+    post:
+      tags: [Administración]
+      summary: Crear una nueva categoría de empleo
+      description: Crea una categoría de empleo validando que el nombre no supere 100 caracteres y sea único sin distinguir mayúsculas ni minúsculas. Registra auditoría en bitácora.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+              properties:
+                nombre:
+                  type: string
+                  maxLength: 100
+      responses:
+        '201':
+          description: Categoría de empleo creada correctamente
+        '400':
+          description: Nombre faltante o inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+        '409':
+          description: Ya existe una categoría de empleo con ese nombre
+  /api/admin/categorias-empleo/{id}:
+    patch:
+      tags: [Administración]
+      summary: Renombrar una categoría de empleo
+      description: Actualiza el nombre de una categoría de empleo validando unicidad sin distinguir mayúsculas y registrando el cambio en bitácora.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: ID de la categoría de empleo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nombre
+              properties:
+                nombre:
+                  type: string
+                  maxLength: 100
+      responses:
+        '200':
+          description: Categoría de empleo actualizada correctamente (o idempotente)
+        '400':
+          description: ID o nombre inválido
+        '401':
+          description: Token no proporcionado o inválido
+        '403':
+          description: Acceso restringido al rol administrador o cuenta suspendida
+        '404':
+          description: Categoría de empleo no encontrada
+        '409':
+          description: Ya existe una categoría de empleo con ese nombre

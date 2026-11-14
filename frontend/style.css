@@ -184,3 +184,14 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateY(-5px);
     box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.1) !important;
 }
+
+/* Utilidades para P-03 Perfil */
+.border-midnight {
+    border-color: var(--color-midnight) !important;
+}
+.list-group-item.active {
+    background-color: var(--color-bg) !important;
+    color: var(--color-midnight) !important;
+    border-color: rgba(0,0,0,0.125);
+    font-weight: 600;
+}

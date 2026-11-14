@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opportunity Bridge - Mi Perfil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header class="header-main text-white py-3">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1 class="logo-text m-0 fs-3">Opportunity Bridge</h1>
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-white text-midnight d-flex justify-content-center align-items-center" style="width: 40px; height: 40px;">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/></svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm py-2">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav fw-medium">
+                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="index.html">Búsqueda</a></li>
+                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="publicar-empleos.html">Publicar empleos</a></li>
+                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="#">Recursos</a></li>
+                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="#">Valoraciones</a></li>
+                    <li class="nav-item mx-3"><a class="nav-link active-link" href="perfil-usuario.html">Mi perfil</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-5 flex-grow-1">
+        <div class="row g-4">
+            <!-- Sidebar del Candidato -->
+            <div class="col-md-3">
+                <div class="bg-white rounded-3 shadow-sm border p-4 text-center mb-3">
+                    <div class="rounded-circle bg-light text-muted d-flex justify-content-center align-items-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                        <svg width="40" height="40" fill="currentColor" viewBox="0 0 16 16"><path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/><path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/></svg>
+                    </div>
+                    <h5 class="fw-bold mb-1" id="profileNameDisplay">Nombre de Usuario</h5>
+                    <p class="text-muted small mb-0">Candidato</p>
+                </div>
+                
+                <div class="bg-white rounded-3 shadow-sm border overflow-hidden">
+                    <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action active bg-light text-midnight fw-medium border-start border-4 border-midnight">Mi perfil</a>
+                        <a href="#" class="list-group-item list-group-item-action text-muted">Solicitudes</a>
+                        <a href="#" class="list-group-item list-group-item-action text-muted">Alertas</a>
+                        <a href="#" class="list-group-item list-group-item-action text-muted">Valoraciones</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenido Principal -->
+            <div class="col-md-9">
+                <div class="row g-4">
+                    <!-- Gestión de Perfil -->
+                    <div class="col-md-6">
+                        <div class="bg-white rounded-3 shadow-sm border p-4 h-100">
+                            <h5 class="text-midnight fw-bold mb-4">Gestión de Perfil</h5>
+                            <form id="formPerfilUsuario">
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Nombre</label>
+                                        <input type="text" class="form-control form-control-sm" id="candidateName">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Apellidos</label>
+                                        <input type="text" class="form-control form-control-sm" id="candidateLastName">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Email</label>
+                                        <input type="email" class="form-control form-control-sm" id="candidateEmail">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small text-muted mb-1">Teléfono</label>
+                                        <input type="tel" class="form-control form-control-sm" id="candidatePhone">
+                                    </div>
+                                </div>
+                                <div class="mt-4 text-center p-3 border rounded-3 bg-light" style="border-style: dashed !important; cursor: pointer;" id="uploadCvArea">
+                                    <svg width="24" height="24" fill="#5A5260" viewBox="0 0 16 16" class="mb-1"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/></svg>
+                                    <p class="small text-muted mb-0">Cargar Currículum (PDF, DOCX)</p>
+                                    <input type="file" id="cvFile" class="d-none" accept=".pdf,.docx">
+                                </div>
+                                <button type="submit" class="btn btn-registro text-white w-100 mt-3 py-2 btn-sm">Guardar Cambios</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Estadísticas -->
+                    <div class="col-md-6">
+                        <div class="bg-white rounded-3 shadow-sm border p-4 h-100">
+                            <h5 class="text-midnight fw-bold mb-4">Estadísticas de perfil</h5>
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="flex-grow-1 text-end">
+                                    <h2 class="fw-bold text-midnight mb-0" id="statVisits">1,245</h2>
+                                    <p class="text-muted small mb-0">Visitas al perfil</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="flex-grow-1 text-end">
+                                    <h2 class="fw-bold text-midnight mb-0" id="statApplications">87</h2>
+                                    <p class="text-muted small mb-0">Total de solicitudes enviadas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel de Alertas -->
+                    <div class="col-md-6">
+                        <div class="bg-white rounded-3 shadow-sm border p-4 h-100">
+                            <h5 class="text-midnight fw-bold mb-4">Panel de Alertas</h5>
+                            <ul class="list-unstyled mb-0" id="alertsList">
+                                <li class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                    <div class="d-flex align-items-center text-midnight">
+                                        <svg width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/></svg>
+                                        <span class="small fw-medium">Desarrollador Web (Madrid)</span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </li>
+                                <li class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center text-midnight">
+                                        <svg width="16" height="16" fill="currentColor" class="me-2" viewBox="0 0 16 16"><path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zM8 1.918l-.797.161A4.002 4.002 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4.002 4.002 0 0 0-3.203-3.92L8 1.917zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5.002 5.002 0 0 1 13 6c0 .88.32 4.2 1.22 6z"/></svg>
+                                        <span class="small fw-medium">Diseñador UI/UX (Remoto)</span>
+                                    </div>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Valoraciones -->
+                    <div class="col-md-6">
+                        <div class="bg-white rounded-3 shadow-sm border p-4 h-100">
+                            <h5 class="text-midnight fw-bold mb-4">Sección de Valoraciones</h5>
+                            <form id="formValoracion">
+                                <div class="mb-3 text-olive fs-4">
+                                    ★ ★ ★ ★ ★
+                                </div>
+                                <textarea class="form-control form-control-sm mb-3" id="reviewText" rows="3" placeholder="Escribe tu experiencia laborando en esta empresa..."></textarea>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-registro btn-sm text-white px-4">Enviar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-top py-4 mt-auto">
+        <div class="container text-center text-muted small fw-medium">
+            <p class="mb-0">&copy; 2026 Opportunity Bridge. Proyecto de Desarrollo de Páginas Web Activas.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

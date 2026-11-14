@@ -13,8 +13,9 @@
         <div class="container d-flex justify-content-between align-items-center">
             <h1 class="logo-text m-0 fs-3">Opportunity Bridge</h1>
             <div>
-                <button class="btn btn-outline-light me-2 fw-medium">Inicio de sesión</button>
-                <button class="btn btn-registro fw-medium text-white">Registro</button>
+                <!-- Estos botones abrirán modales o redireccionarán cuando el backend esté listo -->
+                <button class="btn btn-outline-light me-2 fw-medium" id="btnLogin">Inicio de sesión</button>
+                <button class="btn btn-registro fw-medium text-white" id="btnRegistro">Registro</button>
             </div>
         </div>
     </header>
@@ -26,11 +27,11 @@
             </button>
             <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
                 <ul class="navbar-nav fw-medium">
-                    <li class="nav-item mx-3"><a class="nav-link active-link" href="#">Búsqueda</a></li>
-                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="#">Publicar empleos</a></li>
+                    <li class="nav-item mx-3"><a class="nav-link active-link" href="index.html">Búsqueda</a></li>
+                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="publicar-empleos.html">Publicar empleos</a></li>
                     <li class="nav-item mx-3"><a class="nav-link text-dark" href="#">Recursos</a></li>
                     <li class="nav-item mx-3"><a class="nav-link text-dark" href="#">Valoraciones</a></li>
-                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="#">Mi perfil</a></li>
+                    <li class="nav-item mx-3"><a class="nav-link text-dark" href="perfil-usuario.html">Mi perfil</a></li>
                 </ul>
             </div>
         </div>
@@ -43,78 +44,82 @@
         
         <div class="container position-relative z-1">
             <div class="search-card p-4 mx-auto bg-white rounded-3 shadow">
-                <div class="input-group mb-4 search-bar-wrapper">
-                    <span class="input-group-text bg-white border-end-0">
-                        <svg width="20" height="20" fill="#5A5260" viewBox="0 0 16 16">
-                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                        </svg>
-                    </span>
-                    <input type="text" class="form-control border-start-0 ps-0" placeholder="Buscar empleo por palabra clave o cargo...">
-                    <button class="btn btn-buscar text-white px-4">Buscar</button>
-                </div>
+                <!-- ID listos para que Nestor haga el document.getElementById('searchForm') -->
+                <form id="searchForm">
+                    <div class="input-group mb-4 search-bar-wrapper">
+                        <span class="input-group-text bg-white border-end-0">
+                            <svg width="20" height="20" fill="#5A5260" viewBox="0 0 16 16">
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                            </svg>
+                        </span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="keywordInput" placeholder="Buscar empleo por palabra clave o cargo...">
+                        <button type="submit" class="btn btn-buscar text-white px-4">Buscar</button>
+                    </div>
 
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <select class="form-select text-muted filter-select">
-                            <option selected>Ubicación</option>
-                            <option>Remoto</option>
-                            <option>Presencial</option>
-                            <option>Híbrido</option>
-                        </select>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <select class="form-select text-muted filter-select" id="locationFilter">
+                                <option value="" selected>Ubicación</option>
+                                <option value="remoto">Remoto</option>
+                                <option value="presencial">Presencial</option>
+                                <option value="hibrido">Híbrido</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select text-muted filter-select" id="typeFilter">
+                                <option value="" selected>Tipo de trabajo</option>
+                                <option value="fulltime">Tiempo completo</option>
+                                <option value="parttime">Medio tiempo</option>
+                                <option value="freelance">Freelance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select text-muted filter-select" id="salaryFilter">
+                                <option value="" selected>Salario</option>
+                                <option value="500-1000">$500 - $1000</option>
+                                <option value="1000-2000">$1000 - $2000</option>
+                                <option value="2000+">$2000+</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select text-muted filter-select" id="experienceFilter">
+                                <option value="" selected>Experiencia</option>
+                                <option value="junior">Junior</option>
+                                <option value="semisenior">Semi-Senior</option>
+                                <option value="senior">Senior</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <select class="form-select text-muted filter-select">
-                            <option selected>Tipo de trabajo</option>
-                            <option>Tiempo completo</option>
-                            <option>Medio tiempo</option>
-                            <option>Freelance</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select text-muted filter-select">
-                            <option selected>Salario</option>
-                            <option>$500 - $1000</option>
-                            <option>$1000 - $2000</option>
-                            <option>$2000+</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <select class="form-select text-muted filter-select">
-                            <option selected>Experiencia</option>
-                            <option>Junior</option>
-                            <option>Semi-Senior</option>
-                            <option>Senior</option>
-                        </select>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
     </section>
 
     <section class="metrics-section py-5 bg-light">
         <div class="container">
-            <div class="row g-4 text-center">
+            <!-- ID para que Nestor inyecte las métricas reales desde la API -->
+            <div class="row g-4 text-center" id="metricsContainer">
                 <div class="col-md-3">
                     <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
-                        <h3 class="fw-bold mb-1">340+</h3>
+                        <h3 class="fw-bold mb-1" id="metricEmpresas">340+</h3>
                         <p class="text-muted mb-0 fw-medium">Empresas</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
-                        <h3 class="fw-bold mb-1">12,500+</h3>
+                        <h3 class="fw-bold mb-1" id="metricUsuarios">12,500+</h3>
                         <p class="text-muted mb-0 fw-medium">Usuarios</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
-                        <h3 class="fw-bold mb-1">1,890</h3>
+                        <h3 class="fw-bold mb-1" id="metricEmpleos">1,890</h3>
                         <p class="text-muted mb-0 fw-medium">Empleos publicados</p>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="metric-card p-4 bg-white rounded-3 shadow-sm border-top-accent">
-                        <h3 class="fw-bold mb-1">8,420</h3>
+                        <h3 class="fw-bold mb-1" id="metricSolicitudes">8,420</h3>
                         <p class="text-muted mb-0 fw-medium">Solicitudes</p>
                     </div>
                 </div>
@@ -129,7 +134,8 @@
                 <a href="#" class="text-berry fw-medium text-decoration-none">Ver todas las ofertas &rarr;</a>
             </div>
             
-            <div class="row g-4">
+            <!-- ID para que Nestor inyecte el HTML generado con el fetch de ofertas -->
+            <div class="row g-4" id="recentJobsContainer">
                 <div class="col-md-6">
                     <div class="card job-card h-100 bg-white border-0 shadow-sm p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
@@ -144,7 +150,7 @@
                             <span>💰 $1,500 - $2,000</span>
                             <span>⏱️ Tiempo Completo</span>
                         </div>
-                        <p class="text-muted small mb-4">Buscamos un desarrollador con experiencia en Spring Boot y Angular para unirse a nuestro equipo de innovación creando sistemas logísticos...</p>
+                        <p class="text-muted small mb-4">Buscamos un desarrollador con experiencia en Spring Boot y Angular para unirse a nuestro equipo de innovación...</p>
                         <div class="mt-auto">
                             <button class="btn btn-registro text-white w-100 py-2">Ver Detalles y Postularse</button>
                         </div>
@@ -165,7 +171,7 @@
                             <span>💰 $1,000 - $1,200</span>
                             <span>⏱️ Tiempo Completo</span>
                         </div>
-                        <p class="text-muted small mb-4">Buscamos un diseñador creativo con dominio de Figma para liderar el rediseño de plataformas corporativas y portales de empleo...</p>
+                        <p class="text-muted small mb-4">Buscamos un diseñador creativo con dominio de Figma para liderar el rediseño de plataformas corporativas...</p>
                         <div class="mt-auto">
                             <button class="btn btn-registro text-white w-100 py-2">Ver Detalles y Postularse</button>
                         </div>

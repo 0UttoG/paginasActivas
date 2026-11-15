@@ -1,3 +1,5 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
@@ -15,8 +17,19 @@ import perfilRoutes from './routes/perfil.routes.js';
 import empleadorRoutes from './routes/empleador.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_BACKEND = path.resolve(__dirname, '..');
+const FRONTEND_DIR = path.resolve(ROOT_BACKEND, '..', 'frontend');
+const UPLOADS_LOGOS_DIR = path.join(ROOT_BACKEND, 'uploads', 'logos');
+
 const app = express();
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
+app.use((req, res, next) => {
+    if (req.headers['access-control-request-private-network']) {
+        res.setHeader('Access-Control-Allow-Private-Network', 'true');
+    }
+    next();
+});
+app.use(cors());
 app.use(express.json());
 app.get('/api-docs.json', (req, res) => res.json(swaggerSpec));
 
@@ -62,6 +75,18 @@ app.get('/api/notificaciones', authHeader, listarNotificacionesUsuarioController
 app.patch('/api/notificaciones/:id/leida', authHeader, marcarNotificacionLeidaController);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+//servir logos públicos de empresas y archivos estáticos del frontend
+app.use('/uploads/logos', express.static(UPLOADS_LOGOS_DIR, {
+    setHeaders(res, filePath) {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        if (path.extname(filePath).toLowerCase() === '.svg') {
+            res.setHeader('Content-Disposition', 'attachment');
+        }
+    }
+}));
+app.use(express.static(FRONTEND_DIR));
+
 //capturar rutas inexistentes
 app.use((req, res) => {
     res.status(404).json({

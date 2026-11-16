@@ -456,10 +456,6 @@
                                                 <label class="form-label fw-medium text-midnight small">Nombre completo</label>
                                                 <input type="text" class="form-control" id="regCandName" required>
                                             </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label fw-medium text-midnight small">Documento (DUI/Pasaporte)</label>
-                                                <input type="text" class="form-control" id="regCandDoc" required>
-                                            </div>
                                             <div class="col-12">
                                                 <label class="form-label fw-medium text-midnight small">Correo electrónico</label>
                                                 <input type="email" class="form-control" id="regCandEmail" required>
@@ -485,7 +481,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label fw-medium text-midnight small">NIT / Registro Comercial</label>
-                                                <input type="text" class="form-control" id="regEmpNit" required>
+                                                <input type="text" class="form-control" id="regEmpNit" inputmode="numeric" pattern="[0-9]+(-[0-9]+)*" maxlength="30" title="Usa solo números y guiones entre grupos" required>
                                             </div>
                                             <div class="col-12">
                                                 <label class="form-label fw-medium text-midnight small">Correo corporativo</label>
@@ -544,6 +540,14 @@
     function vincularModalesAuth(onSuccessCallback) {
         inyectarModalesAuthSiFaltan();
         aplicarPlaceholdersRegistro();
+
+        const nitRegistro = document.getElementById('regEmpNit');
+        if (nitRegistro && !nitRegistro.dataset.opbNumericBound) {
+            nitRegistro.dataset.opbNumericBound = 'true';
+            nitRegistro.addEventListener('input', () => {
+                nitRegistro.value = nitRegistro.value.replace(/[^0-9-]/g, '');
+            });
+        }
 
         const formLogin = document.getElementById('formLogin');
         if (formLogin && !formLogin.dataset.opbBound) {
@@ -659,6 +663,11 @@
                 }
                 if (!nombreEmpresa) {
                     mostrarAlerta('Debes ingresar el nombre de la empresa.', 'warning');
+                    return;
+                }
+                if (!/^[0-9]+(?:-[0-9]+)*$/.test(nit) || nit.length > 30) {
+                    mostrarAlerta('El NIT debe contener solo números y guiones entre grupos.', 'warning');
+                    document.getElementById('regEmpNit')?.focus();
                     return;
                 }
 

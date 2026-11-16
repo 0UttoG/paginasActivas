@@ -179,7 +179,7 @@
             nitDiv.className = 'col-md-6';
             nitDiv.innerHTML = `
                 <label class="form-label fw-medium text-midnight">NIT / Registro Comercial</label>
-                <input type="text" class="form-control" id="companyNit" maxlength="30">
+                <input type="text" class="form-control" id="companyNit" inputmode="numeric" pattern="[0-9]+(-[0-9]+)*" maxlength="30" title="Usa solo números y guiones entre grupos">
             `;
             const docDiv = document.createElement('div');
             docDiv.className = 'col-12';
@@ -521,11 +521,21 @@
     function vincularEventos() {
         const formEmpresa = document.getElementById('formDatosEmpresa');
         if (formEmpresa) {
+            const nitEmpresa = document.getElementById('companyNit');
+            nitEmpresa?.addEventListener('input', () => {
+                nitEmpresa.value = nitEmpresa.value.replace(/[^0-9-]/g, '');
+            });
             formEmpresa.addEventListener('submit', async (event) => {
                 event.preventDefault();
+                const nit = (document.getElementById('companyNit')?.value || '').trim();
+                if (nit && !/^[0-9]+(?:-[0-9]+)*$/.test(nit)) {
+                    mostrarAlerta('El NIT debe contener solo números y guiones entre grupos.', 'warning');
+                    document.getElementById('companyNit')?.focus();
+                    return;
+                }
                 const payload = {
                     nombre_legal: (document.getElementById('companyName')?.value || '').trim(),
-                    nit: (document.getElementById('companyNit')?.value || '').trim() || null,
+                    nit: nit || null,
                     correo_contacto: (document.getElementById('companyEmail')?.value || '').trim(),
                     sitio_web: (document.getElementById('companyWebsite')?.value || '').trim() || null,
                     descripcion: (document.getElementById('companyDescription')?.value || '').trim() || null

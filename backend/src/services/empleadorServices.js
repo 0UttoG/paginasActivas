@@ -55,6 +55,14 @@ const validarTextoOpcional = (valor, campo, max = null) => {
     return limpio;
 };
 
+const validarNit = (valor) => {
+    const nit = validarTextoOpcional(valor, 'nit', 30);
+    if (nit && !/^[0-9]+(?:-[0-9]+)*$/.test(nit)) {
+        throw crearError('nit debe contener solo números y guiones entre grupos', 400);
+    }
+    return nit;
+};
+
 //validar correo obligatorio normalizado a minúsculas
 const validarCorreoRequerido = (valor, campo = 'correo_contacto', max = 150) => {
     const correo = validarTextoRequerido(valor, campo, max).toLowerCase();
@@ -99,7 +107,7 @@ export const crearEmpresaEmpleador = async (usuarioId, datos = {}) => {
 
     const nombreLegal = validarTextoRequerido(cuerpo.nombre_legal, 'nombre_legal', 150);
     const correoContacto = validarCorreoRequerido(cuerpo.correo_contacto, 'correo_contacto', 150);
-    const nit = validarTextoOpcional(cuerpo.nit, 'nit', 30);
+    const nit = validarNit(cuerpo.nit);
     const descripcion = validarTextoOpcional(cuerpo.descripcion, 'descripcion');
     const sitioWeb = validarTextoOpcional(cuerpo.sitio_web, 'sitio_web', 255);
     const telefonoContacto = validarTextoOpcional(cuerpo.telefono_contacto, 'telefono_contacto', 20);
@@ -179,7 +187,7 @@ export const actualizarEmpresaEmpleador = async (usuarioId, datos = {}) => {
         ? validarCorreoRequerido(cuerpo.correo_contacto, 'correo_contacto', 150)
         : undefined;
     const nuevoNit = cuerpo.nit !== undefined
-        ? validarTextoOpcional(cuerpo.nit, 'nit', 30)
+        ? validarNit(cuerpo.nit)
         : undefined;
     const nuevaDescripcion = cuerpo.descripcion !== undefined
         ? validarTextoOpcional(cuerpo.descripcion, 'descripcion')

@@ -393,10 +393,9 @@
             });
         }
 
-        const verTodasLink = document.querySelector('.recent-jobs-section a.text-berry');
-        if (verTodasLink) {
-            verTodasLink.addEventListener('click', (event) => {
-                event.preventDefault();
+        const resetFiltersButton = document.getElementById('resetJobFilters');
+        if (resetFiltersButton) {
+            resetFiltersButton.addEventListener('click', () => {
                 if (searchForm) searchForm.reset();
                 estado.pagina = 1;
                 estado.limite = 20;

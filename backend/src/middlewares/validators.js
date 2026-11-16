@@ -41,7 +41,7 @@ export const validarRegistro = [
     body('telefono')
         .optional({ values: 'falsy' })
         .trim()
-        .isLength({ max: 20 }).withMessage('el teléfono no puede exceder 20 caracteres'),
+        .matches(/^[0-9]{4}-?[0-9]{4}$/).withMessage('el teléfono debe tener 8 dígitos en formato 0000-0000'),
     body('rol_id')
         .optional({ values: 'null' })
         .isInt({ min: 1 }).withMessage('el rol_id debe ser un número entero positivo'),

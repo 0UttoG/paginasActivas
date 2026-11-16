@@ -212,7 +212,10 @@
             setVal('candidateName', p.nombres);
             setVal('candidateLastName', p.apellidos);
             setVal('candidateEmail', p.correo);
-            setVal('candidatePhone', p.telefono);
+            const digitosTelefono = String(p.telefono || '').replace(/\D/g, '');
+            setVal('candidatePhone', digitosTelefono.length === 8
+                ? `${digitosTelefono.slice(0, 4)}-${digitosTelefono.slice(4)}`
+                : p.telefono);
 
             const emailChk = document.getElementById('recibeEmailCheck');
             if (emailChk) emailChk.checked = Boolean(p.recibe_email);
@@ -236,8 +239,8 @@
         try {
             const res = await apiFetch('/api/perfil/dashboard');
             const d = res?.data || res || {};
-            const totalApps = d.postulaciones?.total ?? d.total_postulaciones ?? 0;
-            const totalGuardados = d.guardados?.total ?? d.total_guardados ?? 0;
+            const totalApps = d.solicitudes?.total ?? 0;
+            const totalGuardados = d.guardados ?? 0;
 
             const statAppsEl = document.getElementById('statApplications');
             if (statAppsEl) {
@@ -411,12 +414,26 @@
     function vincularEventos() {
         const formPerfil = document.getElementById('formPerfilUsuario');
         if (formPerfil) {
+            const telefonoInput = document.getElementById('candidatePhone');
+            telefonoInput?.addEventListener('input', () => {
+                const digitos = telefonoInput.value.replace(/\D/g, '').slice(0, 8);
+                telefonoInput.value = digitos.length > 4
+                    ? `${digitos.slice(0, 4)}-${digitos.slice(4)}`
+                    : digitos;
+                telefonoInput.setCustomValidity('');
+            });
             formPerfil.addEventListener('submit', async (event) => {
                 event.preventDefault();
+                const telefono = telefonoInput?.value.trim() || '';
+                if (telefono && !/^[0-9]{4}-[0-9]{4}$/.test(telefono)) {
+                    telefonoInput.setCustomValidity('Ingresa 8 dígitos en formato 0000-0000.');
+                    telefonoInput.reportValidity();
+                    return;
+                }
                 const payload = {
                     nombres: (document.getElementById('candidateName')?.value || '').trim(),
                     apellidos: (document.getElementById('candidateLastName')?.value || '').trim(),
-                    telefono: (document.getElementById('candidatePhone')?.value || '').trim(),
+                    telefono,
                     recibe_email: Boolean(document.getElementById('recibeEmailCheck')?.checked),
                     recibe_sms: Boolean(document.getElementById('recibeSmsCheck')?.checked)
                 };

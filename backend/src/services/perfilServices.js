@@ -85,6 +85,9 @@ export const actualizarPerfilCandidato = async (usuarioId, datos = {}) => {
             if (limpio.length > 20) {
                 throw crearError('telefono no puede exceder 20 caracteres', 400);
             }
+            if (limpio && !/^[0-9]{4}-?[0-9]{4}$/.test(limpio)) {
+                throw crearError('telefono debe tener 8 dígitos en formato 0000-0000', 400);
+            }
             telefono = limpio === '' ? null : limpio;
         }
     }

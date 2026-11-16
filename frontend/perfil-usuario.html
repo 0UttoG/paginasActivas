@@ -82,7 +82,7 @@
                                     </div>
                                     <div class="col-6">
                                         <label class="form-label small text-muted mb-1">Teléfono</label>
-                                        <input type="tel" class="form-control form-control-sm" id="candidatePhone">
+                                        <input type="tel" class="form-control form-control-sm" id="candidatePhone" inputmode="numeric" autocomplete="tel-national" maxlength="9" pattern="[0-9]{4}-[0-9]{4}" placeholder="0000-0000" title="Ingresa 8 dígitos en formato 0000-0000">
                                     </div>
                                 </div>
                                 <div class="mt-4 text-center p-3 border rounded-3 bg-light" style="border-style: dashed !important; cursor: pointer;" id="uploadCvArea">
@@ -101,13 +101,13 @@
                             <h5 class="text-midnight fw-bold mb-4">Estadísticas de perfil</h5>
                             <div class="d-flex align-items-center mb-4">
                                 <div class="flex-grow-1 text-end">
-                                    <h2 class="fw-bold text-midnight mb-0" id="statVisits">1,245</h2>
-                                    <p class="text-muted small mb-0">Visitas al perfil</p>
+                                    <h2 class="fw-bold text-midnight mb-0" id="statVisits">0</h2>
+                                    <p class="text-muted small mb-0">Vacantes guardadas</p>
                                 </div>
                             </div>
                             <div class="d-flex align-items-center">
                                 <div class="flex-grow-1 text-end">
-                                    <h2 class="fw-bold text-midnight mb-0" id="statApplications">87</h2>
+                                    <h2 class="fw-bold text-midnight mb-0" id="statApplications">0</h2>
                                     <p class="text-muted small mb-0">Total de solicitudes enviadas</p>
                                 </div>
                             </div>

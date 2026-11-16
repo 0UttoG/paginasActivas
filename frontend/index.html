@@ -131,7 +131,7 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-end mb-4">
                 <h3 class="fw-bold m-0 text-midnight">Ofertas Destacadas Recientes</h3>
-                <a href="#" class="text-berry fw-medium text-decoration-none">Ver todas las ofertas &rarr;</a>
+                <button type="button" id="resetJobFilters" class="btn btn-outline-secondary btn-sm">Actualizar y deshacer filtros</button>
             </div>
             
             <!-- ID para que Nestor inyecte el HTML generado con el fetch de ofertas -->
@@ -239,10 +239,6 @@
                                     <label class="form-label fw-medium text-midnight small">Nombre completo</label>
                                     <input type="text" class="form-control" id="regCandName" required>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-medium text-midnight small">Documento (DUI/Pasaporte)</label>
-                                    <input type="text" class="form-control" id="regCandDoc" required>
-                                </div>
                                 <div class="col-12">
                                     <label class="form-label fw-medium text-midnight small">Correo electrónico</label>
                                     <input type="email" class="form-control" id="regCandEmail" required>
@@ -270,7 +266,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-medium text-midnight small">NIT / Registro Comercial</label>
-                                    <input type="text" class="form-control" id="regEmpNit" required>
+                                    <input type="text" class="form-control" id="regEmpNit" inputmode="numeric" pattern="[0-9]+(-[0-9]+)*" maxlength="30" title="Usa solo números y guiones entre grupos" required>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-medium text-midnight small">Correo corporativo</label>

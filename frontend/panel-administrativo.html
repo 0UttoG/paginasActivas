@@ -49,7 +49,8 @@
                         <button class="list-group-item list-group-item-action active bg-light text-midnight fw-medium border-start border-4 border-midnight py-3" id="dashboard-tab" data-bs-toggle="list" data-bs-target="#dashboard" type="button" role="tab">Dashboard Global</button>
                         <button class="list-group-item list-group-item-action text-muted py-3" id="usuarios-tab" data-bs-toggle="list" data-bs-target="#usuarios" type="button" role="tab">Gestión de Usuarios</button>
                         <button class="list-group-item list-group-item-action text-muted py-3" id="empresas-tab" data-bs-toggle="list" data-bs-target="#empresas" type="button" role="tab">Empresas y Ofertas</button>
-                        <button class="list-group-item list-group-item-action text-muted py-3" id="reportes-tab" data-bs-toggle="list" data-bs-target="#reportes" type="button" role="tab">Reportes del Sistema</button>
+                        <button class="list-group-item list-group-item-action text-muted py-3" id="categorias-tab" data-bs-toggle="list" data-bs-target="#categorias" type="button" role="tab">Categorías de empleo</button>
+                        <button class="list-group-item list-group-item-action text-muted py-3" id="reportes-tab" data-bs-toggle="list" data-bs-target="#reportes" type="button" role="tab">Vacantes reportadas</button>
                     </div>
                 </div>
             </div>
@@ -92,6 +93,39 @@
                                 </div>
                             </div>
                         </div>
+
+                        <section class="bg-white rounded-3 shadow-sm border p-4 mb-4" aria-labelledby="opbStatsTitle">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+                                <div>
+                                    <h5 class="fw-bold text-midnight mb-1" id="opbStatsTitle">Estadísticas detalladas</h5>
+                                    <p class="text-muted small mb-0">El rango filtra postulaciones. Los estados de vacantes muestran el total actual.</p>
+                                </div>
+                                <form id="opbStatsFilterForm" class="d-flex flex-wrap align-items-end gap-2">
+                                    <div>
+                                        <label for="opbStatsDesde" class="form-label small mb-1">Desde</label>
+                                        <input type="date" class="form-control form-control-sm" id="opbStatsDesde">
+                                    </div>
+                                    <div>
+                                        <label for="opbStatsHasta" class="form-label small mb-1">Hasta</label>
+                                        <input type="date" class="form-control form-control-sm" id="opbStatsHasta">
+                                    </div>
+                                    <button type="submit" class="btn btn-sm btn-registro text-white">Aplicar / actualizar</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="opbStatsReset">Mes actual</button>
+                                </form>
+                            </div>
+                            <p id="opbStatsStatus" class="small text-muted mb-3" role="status" aria-live="polite">Cargando estadísticas...</p>
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-4"><div class="border rounded-3 p-3 h-100"><div class="small text-muted">Vacantes totales</div><strong class="fs-4 text-midnight" id="opbStatsVacantesTotal">—</strong></div></div>
+                                <div class="col-sm-4"><div class="border rounded-3 p-3 h-100"><div class="small text-muted">Postulaciones del rango</div><strong class="fs-4 text-midnight" id="opbStatsPostulacionesTotal">—</strong></div></div>
+                                <div class="col-sm-4"><div class="border rounded-3 p-3 h-100"><div class="small text-muted">Contrataciones del rango</div><strong class="fs-4 text-midnight" id="opbStatsContratadosTotal">—</strong></div></div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-lg-6"><div class="border rounded-3 p-3 h-100"><h6 class="fw-bold text-midnight">Vacantes por estado</h6><div id="opbStatsVacantesEstados" class="small">Cargando...</div></div></div>
+                                <div class="col-lg-6"><div class="border rounded-3 p-3 h-100"><h6 class="fw-bold text-midnight">Postulaciones por estado</h6><div id="opbStatsPostulacionesEstados" class="small">Cargando...</div></div></div>
+                                <div class="col-lg-6"><div class="border rounded-3 p-3 h-100"><h6 class="fw-bold text-midnight">Postulaciones por mes</h6><div id="opbStatsPorMes" class="small">Cargando...</div></div></div>
+                                <div class="col-lg-6"><div class="border rounded-3 p-3 h-100"><h6 class="fw-bold text-midnight">Postulaciones por categoría</h6><div id="opbStatsPorCategoria" class="small">Cargando...</div></div></div>
+                            </div>
+                        </section>
 
                         <div class="bg-white rounded-3 shadow-sm border p-4">
                             <h5 class="fw-bold mb-3 text-midnight">Actividad Reciente del Servidor</h5>
@@ -222,20 +256,54 @@
                         </div>
                     </div>
 
-                    <!-- 4. Reportes -->
-                    <div class="tab-pane fade" id="reportes" role="tabpanel">
-                        <div class="bg-white rounded-3 shadow-sm border p-5 text-center">
-                            <svg width="48" height="48" fill="#B8C480" viewBox="0 0 16 16" class="mb-3">
-                                <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z"/>
-                                <path d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zM3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8zm0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5z"/>
-                            </svg>
-                            <h4 class="fw-bold text-midnight">Módulo de Reportes</h4>
-                            <p class="text-muted">La exportación en PDF y CSV de reportes financieros e informes de plataforma estará disponible en la próxima versión.</p>
-                            <button class="btn btn-outline-secondary mt-2 disabled">Generar Reporte Mensual (Próximamente)</button>
+                    <!-- 4. Categorías de empleo -->
+                    <div class="tab-pane fade" id="categorias" role="tabpanel" aria-labelledby="categorias-tab">
+                        <div class="bg-white rounded-3 shadow-sm border p-4" id="opbAdminCategoriasSection">
+                            <h4 class="text-midnight fw-bold mb-2">Categorías de empleo</h4>
+                            <p class="text-muted small">Crea y renombra categorías usadas por las vacantes. Solo se pueden eliminar si no tienen registros asociados.</p>
+                            <form id="opbFormNuevaCategoria" class="d-flex flex-wrap gap-2 mb-3">
+                                <input type="text" class="form-control form-control-sm flex-grow-1" id="opbNuevaCatNombre" placeholder="Nombre de categoría" aria-label="Nombre de nueva categoría" required maxlength="100">
+                                <button type="submit" class="btn btn-sm btn-registro text-white text-nowrap">Agregar</button>
+                            </form>
+                            <div id="opbCategoriasList" class="small text-muted">Cargando categorías...</div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Vacantes reportadas -->
+                    <div class="tab-pane fade" id="reportes" role="tabpanel" aria-labelledby="reportes-tab">
+                        <div class="bg-white rounded-3 shadow-sm border p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-midnight fw-bold mb-0">Vacantes reportadas</h4>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="opbBtnRefreshReportadas">Actualizar</button>
+                            </div>
+                            <div id="opbReportadasList" class="small text-muted">Cargando vacantes reportadas...</div>
                         </div>
                     </div>
 
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="opbEditarCategoriaModal" tabindex="-1" aria-labelledby="opbEditarCategoriaTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-midnight" id="opbEditarCategoriaTitle">Editar categoría de empleo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="opbFormEditarCategoria">
+                    <div class="modal-body">
+                        <input type="hidden" id="opbEditarCategoriaId">
+                        <label for="opbEditarCategoriaNombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="opbEditarCategoriaNombre" maxlength="100" required>
+                        <p id="opbEditarCategoriaError" class="small text-danger mt-2 mb-0" role="alert" hidden></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-registro text-white">Guardar cambios</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

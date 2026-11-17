@@ -14,6 +14,84 @@
     } = window.OPB;
 
     let motivoCallback = null;
+    let categoriasActuales = new Map();
+    let solicitudEstadisticas = 0;
+
+    const ESTADOS_VACANTES = [
+        ['borrador', 'Borrador'], ['pendiente', 'Pendiente'],
+        ['publicada', 'Publicada'], ['oculta', 'Oculta'],
+        ['rechazada', 'Rechazada'], ['cerrada', 'Cerrada']
+    ];
+    const ESTADOS_POSTULACIONES = [
+        ['nueva', 'Nueva'], ['en_proceso', 'En proceso'],
+        ['contratado', 'Contratado'], ['rechazado', 'Rechazado']
+    ];
+
+    function renderizarConteos(filas, vacio) {
+        if (filas.length === 0) return `<p class="text-muted mb-0">${vacio}</p>`;
+        return `<div class="list-group list-group-flush">${filas.map(([nombre, total]) => `
+            <div class="list-group-item px-0 py-2 d-flex justify-content-between gap-2">
+                <span>${escapeHtml(nombre)}</span><strong class="text-midnight">${Number(total ?? 0).toLocaleString('es-SV')}</strong>
+            </div>
+        `).join('')}</div>`;
+    }
+
+    async function cargarEstadisticasAdmin() {
+        const status = document.getElementById('opbStatsStatus');
+        if (!status) return;
+        const solicitudActual = ++solicitudEstadisticas;
+        const desde = document.getElementById('opbStatsDesde')?.value || '';
+        const hasta = document.getElementById('opbStatsHasta')?.value || '';
+        if (desde && hasta && desde > hasta) {
+            status.className = 'small text-danger mb-3';
+            status.textContent = 'La fecha «Desde» no puede ser posterior a «Hasta».';
+            return;
+        }
+
+        status.className = 'small text-muted mb-3';
+        status.textContent = 'Cargando estadísticas...';
+        const params = new URLSearchParams();
+        if (desde) params.set('desde', desde);
+        if (hasta) params.set('hasta', hasta);
+        const ruta = `/api/admin/estadisticas${params.size ? `?${params.toString()}` : ''}`;
+
+        try {
+            const res = await apiFetch(ruta);
+            if (solicitudActual !== solicitudEstadisticas) return;
+            const d = res?.data;
+            if (!d?.resumen_vacantes || !d?.resumen_postulaciones) {
+                throw new Error('La respuesta de estadísticas está incompleta.');
+            }
+            document.getElementById('opbStatsVacantesTotal').textContent = Number(d.resumen_vacantes.total ?? 0).toLocaleString('es-SV');
+            document.getElementById('opbStatsPostulacionesTotal').textContent = Number(d.resumen_postulaciones.total ?? 0).toLocaleString('es-SV');
+            document.getElementById('opbStatsContratadosTotal').textContent = Number(d.resumen_postulaciones.contratado ?? 0).toLocaleString('es-SV');
+            document.getElementById('opbStatsVacantesEstados').innerHTML = renderizarConteos(
+                ESTADOS_VACANTES.map(([clave, etiqueta]) => [etiqueta, d.resumen_vacantes[clave]]),
+                'No hay vacantes.'
+            );
+            document.getElementById('opbStatsPostulacionesEstados').innerHTML = renderizarConteos(
+                ESTADOS_POSTULACIONES.map(([clave, etiqueta]) => [etiqueta, d.resumen_postulaciones[clave]]),
+                'No hay postulaciones en el rango.'
+            );
+            document.getElementById('opbStatsPorMes').innerHTML = renderizarConteos(
+                (d.postulaciones_por_mes || []).map((fila) => [String(fila.mes || '').slice(0, 7), fila.total]),
+                'No hay postulaciones en el rango.'
+            );
+            document.getElementById('opbStatsPorCategoria').innerHTML = renderizarConteos(
+                (d.postulaciones_por_categoria || []).map((fila) => [fila.nombre || 'Sin categoría', fila.total]),
+                'No hay postulaciones en el rango.'
+            );
+            const fechaDesde = String(d.rango?.desde || '').slice(0, 10);
+            const fechaHasta = d.rango?.hasta
+                ? new Date(new Date(d.rango.hasta).getTime() - 1).toISOString().slice(0, 10)
+                : '';
+            status.textContent = `Postulaciones del ${fechaDesde} al ${fechaHasta}. Vacantes: estado actual sin filtro de fecha.`;
+        } catch (err) {
+            if (solicitudActual !== solicitudEstadisticas) return;
+            status.className = 'small text-danger mb-3';
+            status.textContent = `No se pudieron cargar las estadísticas: ${err.message}`;
+        }
+    }
 
     function inicializarCabecera(usuario) {
         const topRight = document.querySelector('header .d-flex.align-items-center');
@@ -145,34 +223,8 @@
             document.getElementById('opbFilterEmpresaEstado')?.addEventListener('change', cargarEmpresasAdmin);
         }
 
-        const reportesPane = document.getElementById('reportes');
-        if (reportesPane && !document.getElementById('opbAdminCategoriasSection')) {
-            reportesPane.innerHTML = `
-                <div class="row g-4" id="opbAdminCategoriasSection">
-                    <div class="col-lg-6">
-                        <div class="bg-white rounded-3 shadow-sm border p-4 h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="text-midnight fw-bold mb-0">Vacantes Reportadas</h5>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" id="opbBtnRefreshReportadas">Actualizar</button>
-                            </div>
-                            <div id="opbReportadasList" class="small text-muted">Cargando vacantes reportadas...</div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6">
-                        <div class="bg-white rounded-3 shadow-sm border p-4 h-100">
-                            <h5 class="text-midnight fw-bold mb-3">Categorías de Empleo</h5>
-                            <form id="opbFormNuevaCategoria" class="d-flex gap-2 mb-3">
-                                <input type="text" class="form-control form-control-sm" id="opbNuevaCatNombre" placeholder="Nombre de categoría" required maxlength="100">
-                                <button type="submit" class="btn btn-sm btn-registro text-white text-nowrap">Agregar</button>
-                            </form>
-                            <div id="opbCategoriasList" class="small text-muted">Cargando categorías...</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('opbBtnRefreshReportadas')?.addEventListener('click', cargarVacantesReportadas);
-            document.getElementById('opbFormNuevaCategoria')?.addEventListener('submit', crearCategoriaAdmin);
-        }
+        document.getElementById('opbBtnRefreshReportadas')?.addEventListener('click', cargarVacantesReportadas);
+        document.getElementById('opbFormNuevaCategoria')?.addEventListener('submit', crearCategoriaAdmin);
     }
 
     async function cargarResumen() {
@@ -404,7 +456,7 @@
                         body: { estado: next, motivo }
                     });
                     mostrarAlerta(`Vacante marcada como ${next}.`, 'success');
-                    await Promise.all([cargarVacantesAdmin(), cargarVacantesReportadas(), cargarResumen(), cargarBitacora()]);
+                    await Promise.all([cargarVacantesAdmin(), cargarVacantesReportadas(), cargarResumen(), cargarBitacora(), cargarEstadisticasAdmin()]);
                 }
             );
             return;
@@ -415,7 +467,7 @@
                 body: { estado: next }
             });
             mostrarAlerta(`Vacante marcada como ${next}.`, 'success');
-            await Promise.all([cargarVacantesAdmin(), cargarVacantesReportadas(), cargarResumen(), cargarBitacora()]);
+            await Promise.all([cargarVacantesAdmin(), cargarVacantesReportadas(), cargarResumen(), cargarBitacora(), cargarEstadisticasAdmin()]);
         } catch (err) {
             mostrarAlerta(err.message, 'error');
         }
@@ -483,6 +535,7 @@
         try {
             const res = await apiFetch('/api/admin/categorias-empleo');
             const items = Array.isArray(res?.data) ? res.data : [];
+            categoriasActuales = new Map(items.map((categoria) => [String(categoria.id), categoria]));
             if (items.length === 0) {
                 container.innerHTML = '<div class="text-muted">Sin categorías registradas.</div>';
                 return;
@@ -493,17 +546,32 @@
                         <strong class="text-midnight">${escapeHtml(c.nombre)}</strong>
                         ${c.total_vacantes !== undefined ? `<span class="badge bg-light text-dark border ms-1">${c.total_vacantes} vacantes</span>` : ''}
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 opb-del-cat" data-id="${c.id}">Eliminar</button>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 opb-edit-cat" data-id="${c.id}">Editar</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 opb-del-cat" data-id="${c.id}">Eliminar</button>
+                    </div>
                 </div>
             `).join('');
 
+            container.querySelectorAll('.opb-edit-cat').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const categoria = categoriasActuales.get(btn.getAttribute('data-id'));
+                    if (!categoria) return;
+                    document.getElementById('opbEditarCategoriaId').value = String(categoria.id);
+                    document.getElementById('opbEditarCategoriaNombre').value = categoria.nombre;
+                    const error = document.getElementById('opbEditarCategoriaError');
+                    error.textContent = '';
+                    error.hidden = true;
+                    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('opbEditarCategoriaModal')).show();
+                });
+            });
             container.querySelectorAll('.opb-del-cat').forEach((btn) => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     try {
                         await apiFetch(`/api/admin/categorias-empleo/${id}`, { method: 'DELETE' });
                         mostrarAlerta('Categoría eliminada.', 'success');
-                        await Promise.all([cargarCategoriasAdmin(), cargarBitacora()]);
+                        await Promise.all([cargarCategoriasAdmin(), cargarBitacora(), cargarEstadisticasAdmin()]);
                     } catch (err) {
                         mostrarAlerta(err.message, 'error');
                     }
@@ -511,6 +579,38 @@
             });
         } catch (err) {
             container.innerHTML = `<div class="text-danger">${escapeHtml(err.message)}</div>`;
+        }
+    }
+
+    async function editarCategoriaAdmin(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const id = document.getElementById('opbEditarCategoriaId')?.value;
+        const input = document.getElementById('opbEditarCategoriaNombre');
+        const error = document.getElementById('opbEditarCategoriaError');
+        const nombre = (input?.value || '').trim();
+        if (!id || !nombre || nombre.length > 100) {
+            error.textContent = 'Ingresa un nombre de 1 a 100 caracteres.';
+            error.hidden = false;
+            input?.focus();
+            return;
+        }
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) btn.disabled = true;
+        error.hidden = true;
+        try {
+            await apiFetch(`/api/admin/categorias-empleo/${id}`, {
+                method: 'PATCH',
+                body: { nombre }
+            });
+            window.bootstrap.Modal.getInstance(document.getElementById('opbEditarCategoriaModal'))?.hide();
+            mostrarAlerta('Categoría actualizada correctamente.', 'success');
+            await Promise.all([cargarCategoriasAdmin(), cargarBitacora(), cargarEstadisticasAdmin()]);
+        } catch (err) {
+            error.textContent = err.message;
+            error.hidden = false;
+        } finally {
+            if (btn) btn.disabled = false;
         }
     }
 
@@ -526,7 +626,7 @@
             });
             input.value = '';
             mostrarAlerta('Categoría creada correctamente.', 'success');
-            await Promise.all([cargarCategoriasAdmin(), cargarBitacora()]);
+            await Promise.all([cargarCategoriasAdmin(), cargarBitacora(), cargarEstadisticasAdmin()]);
         } catch (err) {
             mostrarAlerta(err.message, 'error');
         }
@@ -538,6 +638,16 @@
 
         inicializarCabecera(usuario);
         asegurarContenedoresAdmin();
+
+        document.getElementById('opbStatsFilterForm')?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            cargarEstadisticasAdmin();
+        });
+        document.getElementById('opbStatsReset')?.addEventListener('click', () => {
+            document.getElementById('opbStatsFilterForm')?.reset();
+            cargarEstadisticasAdmin();
+        });
+        document.getElementById('opbFormEditarCategoria')?.addEventListener('submit', editarCategoriaAdmin);
 
         document.getElementById('adminSearchUser')?.addEventListener('input', cargarUsuariosAdmin);
         const searchUserBtn = document.getElementById('adminSearchUser')?.parentElement?.querySelector('button');
@@ -552,7 +662,8 @@
             cargarEmpresasAdmin(),
             cargarVacantesAdmin(),
             cargarVacantesReportadas(),
-            cargarCategoriasAdmin()
+            cargarCategoriasAdmin(),
+            cargarEstadisticasAdmin()
         ]);
     });
 })();

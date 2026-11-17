@@ -1,0 +1,184 @@
+{
+  "proyecto": "Opportunity Bridge",
+  "ejecutado_en": "2026-11-17T17:02:47.355Z",
+  "rama": "submain",
+  "commit_base": "5dd1190c0d072b26fbef6e53dab428b7e390282d",
+  "contexto": "Aplicación local con PostgreSQL remoto configurado; cuentas de demostración del manual de usuario. El aislamiento del entorno no fue verificado.",
+  "casos": [
+    {
+      "id": "P01",
+      "nombre": "Servidor HTTP",
+      "esperado": "GET /health devuelve 200",
+      "resultado": "PASO",
+      "observado": "HTTP 200; status=ok"
+    },
+    {
+      "id": "P02",
+      "nombre": "Conexión PostgreSQL",
+      "esperado": "GET /health/db devuelve 200 y tablas",
+      "resultado": "PASO",
+      "observado": "HTTP 200; tablas=18"
+    },
+    {
+      "id": "P03",
+      "nombre": "Página inicial servida",
+      "esperado": "GET /index.html devuelve HTML",
+      "resultado": "PASO",
+      "observado": "HTTP 200; tipo=text/html; charset=utf-8"
+    },
+    {
+      "id": "P04",
+      "nombre": "Inicio de sesión de los tres roles",
+      "esperado": "Candidato, empleador y administrador reciben token",
+      "resultado": "PASO",
+      "observado": "Cuatro sesiones de demostración iniciadas; tokens omitidos."
+    },
+    {
+      "id": "P05",
+      "nombre": "Contraseña incorrecta",
+      "esperado": "POST /api/auth/login devuelve 401",
+      "resultado": "PASO",
+      "observado": "HTTP 401"
+    },
+    {
+      "id": "P06",
+      "nombre": "Acceso sin token",
+      "esperado": "GET /api/perfil/dashboard devuelve 401",
+      "resultado": "PASO",
+      "observado": "HTTP 401"
+    },
+    {
+      "id": "P07",
+      "nombre": "Rol candidato no entra al área de empresa",
+      "esperado": "Devuelve 403",
+      "resultado": "PASO",
+      "observado": "HTTP 403"
+    },
+    {
+      "id": "P08",
+      "nombre": "Rol empleador no entra al perfil candidato",
+      "esperado": "Devuelve 403",
+      "resultado": "PASO",
+      "observado": "HTTP 403"
+    },
+    {
+      "id": "P09",
+      "nombre": "Panel administrativo restringido",
+      "esperado": "Candidato recibe 403; administrador 200",
+      "resultado": "PASO",
+      "observado": "Candidato HTTP 403; admin HTTP 200"
+    },
+    {
+      "id": "P10",
+      "nombre": "Empresa aprobada",
+      "esperado": "La empresa del recorrido conserva estado aprobada",
+      "resultado": "PASO",
+      "observado": "HTTP 200; empresa=7; estado=aprobada"
+    },
+    {
+      "id": "P11",
+      "nombre": "Oferta cerrada desaparece de búsqueda",
+      "esperado": "GET /api/vacantes excluye la oferta del recorrido",
+      "resultado": "PASO",
+      "observado": "HTTP 200; oferta 6 visible=false"
+    },
+    {
+      "id": "P12",
+      "nombre": "Detalle público de oferta cerrada",
+      "esperado": "GET /api/vacantes/:id devuelve 404",
+      "resultado": "PASO",
+      "observado": "HTTP 404"
+    },
+    {
+      "id": "P13",
+      "nombre": "La oferta no admite nuevas postulaciones",
+      "esperado": "POST /api/perfil/postulaciones rechaza oferta cerrada con 404, 409 o 422 y no crea fila",
+      "resultado": "PASO",
+      "observado": "HTTP 404; rechazo de oferta cerrada"
+    },
+    {
+      "id": "P14",
+      "nombre": "Dashboard de empresa",
+      "esperado": "Una oferta cerrada y dos solicitudes finales",
+      "resultado": "PASO",
+      "observado": "HTTP 200; cerradas=1; solicitudes=2; contratado=1; rechazado=1"
+    },
+    {
+      "id": "P15",
+      "nombre": "Dashboard de candidato contratado",
+      "esperado": "Una solicitud contratada y una vacante guardada",
+      "resultado": "PASO",
+      "observado": "HTTP 200; contratado=1; guardados=1"
+    },
+    {
+      "id": "P16",
+      "nombre": "Dashboard de candidato rechazado",
+      "esperado": "Una solicitud rechazada sin datos del otro candidato",
+      "resultado": "PASO",
+      "observado": "HTTP 200; total=1; rechazado=1"
+    },
+    {
+      "id": "P17",
+      "nombre": "Historial de postulaciones separado por usuario",
+      "esperado": "Cada candidato ve solo su propia solicitud",
+      "resultado": "PASO",
+      "observado": "HTTP 200/200; solicitudes distintas=true"
+    },
+    {
+      "id": "P18",
+      "nombre": "Vacante guardada en perfil",
+      "esperado": "Candidato principal ve la vacante como no disponible",
+      "resultado": "PASO",
+      "observado": "HTTP 200; guardada=true; disponible=false"
+    },
+    {
+      "id": "P19",
+      "nombre": "Empresa consulta a sus postulantes",
+      "esperado": "Aparecen dos solicitudes de la oferta propia",
+      "resultado": "PASO",
+      "observado": "HTTP 200; solicitudes=2; estados=rechazado,contratado"
+    },
+    {
+      "id": "P20",
+      "nombre": "CV propio del candidato",
+      "esperado": "GET /api/perfil/cv devuelve PDF",
+      "resultado": "PASO",
+      "observado": "HTTP 200; tipo=application/pdf"
+    },
+    {
+      "id": "P21",
+      "nombre": "Empresa accede al CV del postulante",
+      "esperado": "GET /api/empleador/postulaciones/:id/cv devuelve PDF",
+      "resultado": "PASO",
+      "observado": "HTTP 200; tipo=application/pdf"
+    },
+    {
+      "id": "P22",
+      "nombre": "Candidato no usa ruta privada de empresa",
+      "esperado": "GET de CV por área de empresa devuelve 403",
+      "resultado": "PASO",
+      "observado": "HTTP 403"
+    },
+    {
+      "id": "P23",
+      "nombre": "Notificación de decisión",
+      "esperado": "Candidato contratado recibe notificación de estado contratado",
+      "resultado": "PASO",
+      "observado": "HTTP 200; notificación de contratación=true"
+    },
+    {
+      "id": "P24",
+      "nombre": "Persistencia en PostgreSQL",
+      "esperado": "Empresa, oferta y dos solicitudes coinciden con la API",
+      "resultado": "PASO",
+      "observado": "Empresa=aprobada; vacante=cerrada; solicitudes=2; contratadas=1; rechazadas=1"
+    },
+    {
+      "id": "P25",
+      "nombre": "Estadísticas administrativas",
+      "esperado": "GET /api/admin/estadisticas devuelve resúmenes",
+      "resultado": "PASO",
+      "observado": "HTTP 200; resúmenes presentes=true"
+    }
+  ]
+}
